@@ -17,9 +17,15 @@ export type ParsedCommand =
   | { type: 'new'; mode: ChatMode }
   | { type: 'mode'; mode: ChatMode }
   | { type: 'status' }
+  | { type: 'projects' }
   | { type: 'reset' }
   | { type: 'prompt'; prompt: string }
   | { type: 'invalid'; message: string }
+
+export interface OpenProjectsResult {
+  roots: string[]
+  stateFilePath: string
+}
 
 export interface CodexTurnResult {
   threadId: string

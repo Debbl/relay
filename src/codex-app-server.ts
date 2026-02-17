@@ -39,6 +39,8 @@ interface OpenThreadResult {
   model: string
 }
 
+type CommandExecutionReporter = (message: string) => void | Promise<void>
+
 export interface RunCodexTurnInput {
   prompt: string
   mode: ChatMode
@@ -46,6 +48,7 @@ export interface RunCodexTurnInput {
   cwd: string
   codexBin?: string
   timeoutMs?: number
+  onCommandExecution?: CommandExecutionReporter
 }
 
 export interface CreateCodexThreadInput {
@@ -53,6 +56,7 @@ export interface CreateCodexThreadInput {
   cwd: string
   codexBin?: string
   timeoutMs?: number
+  onCommandExecution?: CommandExecutionReporter
 }
 
 interface CollaborationModePayload {
@@ -180,6 +184,7 @@ export async function createCodexThread(
   const client = new CodexAppServerClient({
     cwd: input.cwd,
     codexBin: input.codexBin ?? DEFAULT_CODEX_BIN,
+    onCommandExecution: input.onCommandExecution,
   })
 
   try {
@@ -207,6 +212,7 @@ export async function runCodexTurn(
   const client = new CodexAppServerClient({
     cwd: input.cwd,
     codexBin: input.codexBin ?? DEFAULT_CODEX_BIN,
+    onCommandExecution: input.onCommandExecution,
   })
 
   const accumulator = createTurnAccumulator()
@@ -486,7 +492,11 @@ function isThreadResult(value: unknown): value is ThreadResult {
 }
 
 class CodexAppServerClient {
-  private readonly options: { cwd: string; codexBin: string }
+  private readonly options: {
+    cwd: string
+    codexBin: string
+    onCommandExecution?: CommandExecutionReporter
+  }
 
   private readonly child: ChildProcessWithoutNullStreams
 
@@ -504,9 +514,19 @@ class CodexAppServerClient {
 
   private exited = false
 
-  constructor(options: { cwd: string; codexBin: string }) {
+  constructor(options: {
+    cwd: string
+    codexBin: string
+    onCommandExecution?: CommandExecutionReporter
+  }) {
     this.options = options
-    this.child = spawn(this.options.codexBin, ['app-server'], {
+    const commandArgs = ['app-server']
+    const command = formatCommandForLog(this.options.codexBin, commandArgs)
+    const message = `[codex] executing command: ${command}`
+    // eslint-disable-next-line no-console
+    console.info(message)
+    reportCommandExecution(this.options.onCommandExecution, message)
+    this.child = spawn(this.options.codexBin, commandArgs, {
       cwd: this.options.cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
     })
@@ -624,4 +644,23 @@ class CodexAppServerClient {
       signal ?? 'null'
     })${suffix}`
   }
+}
+
+function formatCommandForLog(command: string, args: string[]): string {
+  return [command, ...args]
+    .map((part) => (/[\s"'\\]/.test(part) ? JSON.stringify(part) : part))
+    .join(' ')
+}
+
+function reportCommandExecution(
+  reporter: CommandExecutionReporter | undefined,
+  message: string,
+): void {
+  if (!reporter) {
+    return
+  }
+
+  void Promise.resolve(reporter(message)).catch((error) => {
+    console.error('failed to report codex command execution', error)
+  })
 }

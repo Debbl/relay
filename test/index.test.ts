@@ -19,6 +19,7 @@ describe('message routing', () => {
   it('ignores group message without @ mention', async () => {
     const createThread = vi.fn()
     const runTurn = vi.fn()
+    const listOpenProjects = vi.fn()
 
     const reply = await buildReplyForMessageEvent(
       createEvent({
@@ -36,6 +37,7 @@ describe('message routing', () => {
             setSession,
             clearSession,
             withSessionLock,
+            listOpenProjects,
           }),
       },
     )
@@ -54,6 +56,7 @@ describe('message routing', () => {
 
     const createThread = vi.fn().mockResolvedValue(createdSession)
     const runTurn = vi.fn()
+    const listOpenProjects = vi.fn()
 
     const reply = await buildReplyForMessageEvent(
       createEvent({
@@ -71,6 +74,7 @@ describe('message routing', () => {
             setSession,
             clearSession,
             withSessionLock,
+            listOpenProjects,
           }),
       },
     )
@@ -101,6 +105,7 @@ describe('message routing', () => {
     })
 
     const createThread = vi.fn()
+    const listOpenProjects = vi.fn()
     const runTurn = vi.fn().mockResolvedValue({
       threadId: 'existing_thread',
       model: 'gpt-5.3-codex',
@@ -124,6 +129,7 @@ describe('message routing', () => {
             setSession,
             clearSession,
             withSessionLock,
+            listOpenProjects,
           }),
       },
     )
@@ -140,17 +146,87 @@ describe('message routing', () => {
     })
     expect(reply).toBe('reply-from-codex')
   })
+
+  it('ignores bot self messages in p2p chat', async () => {
+    const createThread = vi.fn()
+    const runTurn = vi.fn()
+    const listOpenProjects = vi.fn()
+
+    const reply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'p2p',
+        text: '已收到，正在处理任务: hello',
+        senderOpenId: 'bot_open_id',
+        senderType: 'APP',
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(reply).toBeNull()
+    expect(createThread).not.toHaveBeenCalled()
+    expect(runTurn).not.toHaveBeenCalled()
+  })
+
+  it('returns open projects for /projects', async () => {
+    const createThread = vi.fn()
+    const runTurn = vi.fn()
+    const listOpenProjects = vi.fn().mockResolvedValue({
+      roots: ['/Users/ding/i/relay', '/Users/ding/i/realfund.news'],
+      stateFilePath: '/Users/ding/.codex/.codex-global-state.json',
+    })
+
+    const reply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'p2p',
+        text: '/projects',
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(createThread).not.toHaveBeenCalled()
+    expect(runTurn).not.toHaveBeenCalled()
+    expect(listOpenProjects).toHaveBeenCalledOnce()
+    expect(reply).toContain('当前打开的项目:')
+    expect(reply).toContain('/Users/ding/i/relay')
+  })
 })
 
 function createEvent(input: {
   chatType: string
   text: string
   mentions?: Array<{ id?: { open_id?: string } }>
+  senderOpenId?: string
+  senderType?: string
 }) {
   return {
     sender: {
+      sender_type: input.senderType,
       sender_id: {
-        open_id: 'user_1',
+        open_id: input.senderOpenId ?? 'user_1',
       },
     },
     message: {

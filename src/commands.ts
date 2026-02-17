@@ -4,6 +4,7 @@ const COMMAND_HELP = '/help'
 const COMMAND_NEW = '/new'
 const COMMAND_MODE = '/mode'
 const COMMAND_STATUS = '/status'
+const COMMAND_PROJECTS = '/projects'
 const COMMAND_RESET = '/reset'
 
 export const HELP_TEXT = [
@@ -12,6 +13,7 @@ export const HELP_TEXT = [
   '/new [default|plan] - 新建会话',
   '/mode <default|plan> - 切换当前会话模式',
   '/status - 查看当前会话状态',
+  '/projects - 列出当前打开的项目',
   '/reset - 清空当前会话',
 ].join('\n')
 
@@ -95,6 +97,17 @@ export function parseCommand(input: string): ParsedCommand {
     }
 
     return { type: 'status' }
+  }
+
+  if (command === COMMAND_PROJECTS) {
+    if (parts.length > 1) {
+      return {
+        type: 'invalid',
+        message: `/projects 不接受参数。\n\n${HELP_TEXT}`,
+      }
+    }
+
+    return { type: 'projects' }
   }
 
   if (command === COMMAND_RESET) {

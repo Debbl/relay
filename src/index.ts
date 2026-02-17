@@ -2,6 +2,7 @@
 import * as Lark from '@larksuiteoapi/node-sdk'
 import { handleIncomingText } from './bot-handler'
 import { createCodexThread, runCodexTurn } from './codex-app-server'
+import { listOpenProjects } from './codex-state'
 import { buildReplyForMessageEvent } from './relay-bot'
 import {
   clearSession,
@@ -26,6 +27,15 @@ const wsClient = new Lark.WSClient(baseConfig)
 
 const eventDispatcher = new Lark.EventDispatcher({}).register({
   'im.message.receive_v1': async (data) => {
+    // eslint-disable-next-line no-console
+    console.info('feishu message received', {
+      chatId: data.message.chat_id,
+      chatType: data.message.chat_type,
+      messageId: data.message.message_id,
+      messageType: data.message.message_type,
+      senderType: data.sender.sender_type,
+    })
+
     try {
       const reply = await buildReplyForMessageEvent(data, {
         botOpenId,
@@ -37,6 +47,8 @@ const eventDispatcher = new Lark.EventDispatcher({}).register({
                 cwd: workspaceCwd,
                 codexBin,
                 timeoutMs: codexTimeoutMs,
+                onCommandExecution: (message) =>
+                  sendCommandExecutionEcho(client, data, message),
               }),
             runTurn: (params) =>
               runCodexTurn({
@@ -44,11 +56,14 @@ const eventDispatcher = new Lark.EventDispatcher({}).register({
                 cwd: workspaceCwd,
                 codexBin,
                 timeoutMs: codexTimeoutMs,
+                onCommandExecution: (message) =>
+                  sendCommandExecutionEcho(client, data, message),
               }),
             getSession,
             setSession,
             clearSession,
             withSessionLock,
+            listOpenProjects,
           }),
       })
 
@@ -77,6 +92,24 @@ function parseTimeoutMs(raw: string | undefined): number {
   }
 
   return parsed
+}
+
+async function sendCommandExecutionEcho(
+  larkClient: Lark.Client,
+  data: {
+    message: {
+      chat_id: string
+      chat_type: string
+      message_id: string
+    }
+  },
+  message: string,
+): Promise<void> {
+  try {
+    await sendReply(larkClient, data, message)
+  } catch (error) {
+    console.error('failed to send command execution echo', error)
+  }
 }
 
 async function sendReply(

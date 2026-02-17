@@ -16,6 +16,12 @@ describe('parseCommand', () => {
     })
   })
 
+  it('parses /projects', () => {
+    expect(parseCommand('/projects')).toEqual({
+      type: 'projects',
+    })
+  })
+
   it('returns invalid for bad mode', () => {
     const result = parseCommand('/mode unknown')
     expect(result.type).toBe('invalid')

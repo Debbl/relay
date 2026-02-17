@@ -5,6 +5,7 @@ import type {
   ChatMode,
   CodexTurnResult,
   HandleIncomingTextInput,
+  OpenProjectsResult,
 } from './types'
 
 export interface HandleIncomingTextDeps {
@@ -18,6 +19,7 @@ export interface HandleIncomingTextDeps {
   setSession: (sessionKey: string, session: BotSession) => void
   clearSession: (sessionKey: string) => void
   withSessionLock: <T>(sessionKey: string, run: () => Promise<T>) => Promise<T>
+  listOpenProjects: () => Promise<OpenProjectsResult>
 }
 
 export async function handleIncomingText(
@@ -53,6 +55,27 @@ export async function handleIncomingText(
         `mode: ${currentSession.mode}`,
         `model: ${currentSession.model}`,
       ].join('\n')
+    }
+
+    if (parsed.type === 'projects') {
+      try {
+        const result = await deps.listOpenProjects()
+        if (result.roots.length === 0) {
+          return [
+            '当前没有记录到打开的项目。',
+            `state file: ${result.stateFilePath}`,
+          ].join('\n')
+        }
+
+        const lines = result.roots.map((root, index) => `${index + 1}. ${root}`)
+        return [
+          '当前打开的项目:',
+          ...lines,
+          `state file: ${result.stateFilePath}`,
+        ].join('\n')
+      } catch (error) {
+        return formatProjectsError(error)
+      }
     }
 
     if (parsed.type === 'reset') {
@@ -112,4 +135,12 @@ function formatCodexError(error: unknown): string {
   }
 
   return 'Codex 执行失败，请稍后重试。'
+}
+
+function formatProjectsError(error: unknown): string {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return `读取打开项目失败: ${error.message}`
+  }
+
+  return '读取打开项目失败，请稍后重试。'
 }

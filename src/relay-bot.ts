@@ -2,6 +2,7 @@ import type { FeishuMention, HandleIncomingTextInput } from './types'
 
 export interface ReceiveMessageEvent {
   sender: {
+    sender_type?: string
     sender_id?: {
       open_id?: string
       user_id?: string
@@ -26,6 +27,10 @@ export async function buildReplyForMessageEvent(
   event: ReceiveMessageEvent,
   deps: RelayBotDeps,
 ): Promise<string | null> {
+  if (isMessageFromBot(event, deps.botOpenId)) {
+    return null
+  }
+
   if (event.message.message_type !== 'text') {
     return '解析消息失败，请发送文本消息。'
   }
@@ -106,6 +111,23 @@ function resolveSenderId(
   }
 
   return senderId.open_id ?? senderId.user_id ?? senderId.union_id ?? null
+}
+
+function isMessageFromBot(
+  event: ReceiveMessageEvent,
+  botOpenId?: string,
+): boolean {
+  const senderType = event.sender.sender_type?.toLowerCase()
+  if (senderType === 'app') {
+    return true
+  }
+
+  if (!botOpenId) {
+    return false
+  }
+
+  const senderId = resolveSenderId(event.sender.sender_id)
+  return senderId === botOpenId
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
