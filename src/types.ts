@@ -4,6 +4,7 @@ export interface BotSession {
   threadId: string
   model: string
   mode: ChatMode
+  cwd: string
 }
 
 export interface SessionKeyInput {
@@ -32,6 +33,7 @@ export interface CodexTurnResult {
   model: string
   mode: ChatMode
   message: string
+  cwd: string
 }
 
 export interface RpcErrorObject {
@@ -75,6 +77,7 @@ export interface ThreadResult {
   thread: {
     id: string
   }
+  cwd: string
   model: string
 }
 

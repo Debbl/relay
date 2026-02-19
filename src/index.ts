@@ -41,17 +41,17 @@ interface FeishuReceiveMessageEvent extends ReceiveMessageEvent {
 const eventDispatcher = new Lark.EventDispatcher({}).register({
   'im.message.receive_v1': async (data: FeishuReceiveMessageEvent) => {
     // eslint-disable-next-line no-console
-    console.info('feishu message received', JSON.stringify(data))
+    console.info(
+      'feishu message received\n',
+      JSON.stringify(data, null, 2),
+      '\n',
+    )
 
     if (!shouldProcessMessage(data)) {
       return
     }
 
     if (isTaskRunning) {
-      console.warn(
-        'skip incoming message: task is running',
-        JSON.stringify(data),
-      )
       void sendReply(client, data, BUSY_MESSAGE)
       return
     }
@@ -82,8 +82,6 @@ async function processIncomingEvent(
   data: FeishuReceiveMessageEvent,
 ): Promise<void> {
   try {
-    await sendReply(client, data, '收到消息，正在处理...')
-
     const reply = await buildReplyForMessageEvent(data, {
       botOpenId,
       handleIncomingText: (input) =>
@@ -94,8 +92,6 @@ async function processIncomingEvent(
               cwd: workspaceCwd,
               codexBin,
               timeoutMs: codexTimeoutMs,
-              onCommandExecution: (message) =>
-                sendCommandExecutionEcho(client, data, message),
             }),
           runTurn: (params) =>
             runCodexTurn({
@@ -103,8 +99,6 @@ async function processIncomingEvent(
               cwd: workspaceCwd,
               codexBin,
               timeoutMs: codexTimeoutMs,
-              onCommandExecution: (message) =>
-                sendCommandExecutionEcho(client, data, message),
             }),
           getSession,
           setSession,
@@ -169,24 +163,6 @@ function resolveSenderId(
   }
 
   return sender.open_id ?? sender.user_id ?? sender.union_id ?? null
-}
-
-async function sendCommandExecutionEcho(
-  larkClient: Lark.Client,
-  data: {
-    message: {
-      chat_id: string
-      chat_type: string
-      message_id: string
-    }
-  },
-  message: string,
-): Promise<void> {
-  try {
-    await sendReply(larkClient, data, message)
-  } catch (error) {
-    console.error('failed to send command execution echo', error)
-  }
 }
 
 async function sendReply(

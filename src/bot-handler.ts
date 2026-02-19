@@ -102,6 +102,7 @@ export async function handleIncomingText(
         return [
           '已创建新会话。',
           `thread: ${created.threadId}`,
+          `cwd: ${created.cwd}`,
           `mode: ${created.mode}`,
           `model: ${created.model}`,
         ].join('\n')
@@ -121,6 +122,7 @@ export async function handleIncomingText(
         threadId: result.threadId,
         model: result.model,
         mode: result.mode,
+        cwd: result.cwd,
       })
       return result.message
     } catch (error) {

@@ -52,6 +52,7 @@ describe('message routing', () => {
       threadId: 'thread_plan_1',
       mode: 'plan',
       model: 'gpt-5.3-codex',
+      cwd: '/Users/home/workspace/relay',
     }
 
     const createThread = vi.fn().mockResolvedValue(createdSession)
@@ -102,6 +103,7 @@ describe('message routing', () => {
       threadId: 'existing_thread',
       mode: 'default',
       model: 'gpt-5.3-codex',
+      cwd: '/Users/home/workspace/relay',
     })
 
     const createThread = vi.fn()
@@ -142,6 +144,7 @@ describe('message routing', () => {
         threadId: 'existing_thread',
         mode: 'default',
         model: 'gpt-5.3-codex',
+        cwd: '/Users/home/workspace/relay',
       },
     })
     expect(reply).toBe('reply-from-codex')
