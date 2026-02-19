@@ -42,16 +42,24 @@ export interface RpcErrorObject {
 }
 
 export interface RpcSuccessResponse<TResult = unknown> {
-  id: number
+  id: RpcRequestId
   result: TResult
 }
 
 export interface RpcErrorResponse {
-  id: number
+  id: RpcRequestId
   error: RpcErrorObject
 }
 
+export type RpcRequestId = number | string
+
 export interface RpcNotification<TParams = unknown> {
+  method: string
+  params: TParams
+}
+
+export interface RpcServerRequest<TParams = unknown> {
+  id: RpcRequestId
   method: string
   params: TParams
 }
@@ -59,6 +67,7 @@ export interface RpcNotification<TParams = unknown> {
 export type RpcIncomingLine =
   | RpcSuccessResponse<unknown>
   | RpcErrorResponse
+  | RpcServerRequest<unknown>
   | RpcNotification<unknown>
 
 export interface CollaborationModeMask {

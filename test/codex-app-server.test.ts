@@ -11,6 +11,9 @@ describe('codex-app-server helpers', () => {
   it('parses rpc response and notification lines', () => {
     const response = parseRpcLine('{"id":1,"result":{"ok":true}}')
     const notification = parseRpcLine('{"method":"turn/completed","params":{}}')
+    const serverRequest = parseRpcLine(
+      '{"id":"req-1","method":"item/commandExecution/requestApproval","params":{"foo":"bar"}}',
+    )
 
     expect(response).toEqual({
       id: 1,
@@ -19,6 +22,20 @@ describe('codex-app-server helpers', () => {
     expect(notification).toEqual({
       method: 'turn/completed',
       params: {},
+    })
+    expect(serverRequest).toEqual({
+      id: 'req-1',
+      method: 'item/commandExecution/requestApproval',
+      params: { foo: 'bar' },
+    })
+  })
+
+  it('parses rpc response lines with string id', () => {
+    const response = parseRpcLine('{"id":"req-2","result":{"ok":true}}')
+
+    expect(response).toEqual({
+      id: 'req-2',
+      result: { ok: true },
     })
   })
 
@@ -79,6 +96,20 @@ describe('codex-app-server helpers', () => {
 
     expect(acc.turnCompleted).toBe(true)
     expect(acc.turnError).toBe('boom')
+  })
+
+  it('marks turn complete for error notifications', () => {
+    const acc = createTurnAccumulator()
+
+    applyTurnNotification(acc, {
+      method: 'error',
+      params: {
+        message: 'rpc exploded',
+      },
+    })
+
+    expect(acc.turnCompleted).toBe(true)
+    expect(acc.turnError).toBe('rpc exploded')
   })
 
   it('formats rpc errors', () => {

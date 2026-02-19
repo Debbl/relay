@@ -13,6 +13,8 @@ import type {
   RpcIncomingLine,
   RpcItemCompletedParams,
   RpcNotification,
+  RpcRequestId,
+  RpcServerRequest,
   RpcSuccessResponse,
   RpcTaskCompleteParams,
   RpcTurnCompletedParams,
@@ -144,13 +146,21 @@ export function parseRpcLine(line: string): RpcIncomingLine | null {
   }
 
   if (typeof parsed.method === 'string') {
+    if (isRpcRequestId(parsed.id)) {
+      return {
+        id: parsed.id,
+        method: parsed.method,
+        params: parsed.params,
+      }
+    }
+
     return {
       method: parsed.method,
       params: parsed.params,
     }
   }
 
-  if (typeof parsed.id !== 'number') {
+  if (!isRpcRequestId(parsed.id)) {
     return null
   }
 
@@ -217,7 +227,7 @@ export async function runCodexTurn(
 
   client.setNotificationHandler((notification) => {
     applyTurnNotification(accumulator, notification)
-    if (notification.method === 'turn/completed' && !turnDoneResolved) {
+    if (accumulator.turnCompleted && !turnDoneResolved) {
       turnDoneResolved = true
       turnDone.resolve()
     }
@@ -432,6 +442,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
+function isRpcRequestId(value: unknown): value is RpcRequestId {
+  return typeof value === 'number' || typeof value === 'string'
+}
+
 function isRpcErrorObject(value: unknown): value is RpcErrorObject {
   if (!isRecord(value)) {
     return false
@@ -448,6 +462,48 @@ function isRpcSuccessResponse(
   value: RpcIncomingLine,
 ): value is RpcSuccessResponse<unknown> {
   return 'result' in value
+}
+
+function isRpcServerRequest(
+  value: RpcIncomingLine,
+): value is RpcServerRequest<unknown> {
+  return 'method' in value && 'id' in value
+}
+
+function getServerRequestResult(method: string): unknown | null {
+  if (method === 'item/commandExecution/requestApproval') {
+    return { decision: 'decline' }
+  }
+
+  if (method === 'item/fileChange/requestApproval') {
+    return { decision: 'decline' }
+  }
+
+  if (method === 'execCommandApproval') {
+    return { decision: 'denied' }
+  }
+
+  if (method === 'applyPatchApproval') {
+    return { decision: 'denied' }
+  }
+
+  if (method === 'item/tool/requestUserInput') {
+    return { answers: {} }
+  }
+
+  if (method === 'item/tool/call') {
+    return {
+      success: false,
+      contentItems: [
+        {
+          type: 'inputText',
+          text: 'Dynamic tool calls are unavailable in relay-bot.',
+        },
+      ],
+    }
+  }
+
+  return null
 }
 
 function isCollaborationModeMask(
@@ -497,7 +553,7 @@ class CodexAppServerClient {
 
   private readonly child: ChildProcessWithoutNullStreams
 
-  private readonly pending = new Map<number, PendingRequest>()
+  private readonly pending = new Map<RpcRequestId, PendingRequest>()
 
   private readonly stderrBuffer: string[] = []
 
@@ -601,6 +657,17 @@ class CodexAppServerClient {
     }
 
     if ('method' in parsed) {
+      if (isRpcServerRequest(parsed)) {
+        void this.respondToServerRequest(parsed).catch((error) => {
+          this.stderrBuffer.push(
+            `failed to respond to server request "${parsed.method}": ${String(
+              error,
+            )}`,
+          )
+        })
+        return
+      }
+
       this.notificationHandler?.(parsed)
       return
     }
@@ -619,6 +686,73 @@ class CodexAppServerClient {
     if (isRpcSuccessResponse(parsed)) {
       pending.resolve(parsed.result)
     }
+  }
+
+  private async respondToServerRequest(
+    request: RpcServerRequest<unknown>,
+  ): Promise<void> {
+    const result = getServerRequestResult(request.method)
+    if (result !== null) {
+      await this.sendRpcResult(request.id, result)
+      return
+    }
+
+    await this.sendRpcError(
+      request.id,
+      -32601,
+      `Unsupported server request method: ${request.method}`,
+    )
+  }
+
+  private async sendRpcResult(
+    id: RpcRequestId,
+    result: unknown,
+  ): Promise<void> {
+    await this.writeRpcPayload({
+      jsonrpc: '2.0',
+      id,
+      result,
+    })
+  }
+
+  private async sendRpcError(
+    id: RpcRequestId,
+    code: number,
+    message: string,
+  ): Promise<void> {
+    await this.writeRpcPayload({
+      jsonrpc: '2.0',
+      id,
+      error: {
+        code,
+        message,
+      },
+    })
+  }
+
+  private async writeRpcPayload(payload: {
+    jsonrpc: '2.0'
+    id: RpcRequestId
+    result?: unknown
+    error?: {
+      code: number
+      message: string
+    }
+  }): Promise<void> {
+    if (this.exited) {
+      return
+    }
+
+    const serialized = JSON.stringify(payload)
+    await new Promise<void>((resolve, reject) => {
+      this.child.stdin.write(`${serialized}\n`, (error) => {
+        if (error) {
+          reject(error)
+          return
+        }
+        resolve()
+      })
+    })
   }
 
   private buildExitMessage(
