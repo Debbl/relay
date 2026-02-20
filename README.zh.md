@@ -90,10 +90,11 @@ pnpm dev
 
 ## 说明
 
-- 会话映射仅保存在内存中；重启进程后会重置。
-- Codex 运行时仍会把自己的线程存到 `~/.codex/sessions`。
+- Relay 会把会话索引保存到 `~/.relay/sessions.json`，重启后可恢复活跃会话。
+- 索引仅保存 thread id 和基础元数据；完整会话内容仍在 `~/.codex/sessions`。
 - Relay 将工作区根目录固定为进程启动目录（`process.cwd()`）。
 - 请确保进程用户对 `~/.codex/sessions` 有读写权限。
+- 请确保进程用户对 `~/.relay/sessions.json` 有读写权限。
 - 运行时不再使用 `.env.local`。
 
 ## 质量检查

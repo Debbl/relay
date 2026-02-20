@@ -1,3 +1,4 @@
+import process from 'node:process'
 import * as Lark from '@larksuiteoapi/node-sdk'
 import { t } from '@lingui/core/macro'
 import { handleIncomingText } from './bot/handler'
@@ -11,6 +12,7 @@ import { initializeI18n } from './i18n/runtime'
 import {
   clearSession,
   getSession,
+  initializeSessionStore,
   setSession,
   withSessionLock,
 } from './session/store'
@@ -18,6 +20,18 @@ import type { FeishuReceiveMessageEvent } from './feishu/reply'
 
 const relayConfig = loadConfigOrExit()
 initializeI18n(relayConfig.locale)
+
+try {
+  initializeSessionStore({
+    homeDir: relayConfig.homeDir,
+    workspaceCwd: relayConfig.workspaceCwd,
+  })
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error)
+  console.error(t`Failed to start relay: ${message}`)
+  process.exit(1)
+}
+
 const BUSY_MESSAGE = t`Currently busy. Please try again later.`
 
 const client = new Lark.Client(relayConfig.baseConfig)

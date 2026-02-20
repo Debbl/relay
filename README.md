@@ -90,10 +90,11 @@ pnpm dev
 
 ## Notes
 
-- Sessions are in-memory only; restarting the process resets session mapping.
-- Codex runtime still stores its own threads under `~/.codex/sessions`.
+- Relay stores session index at `~/.relay/sessions.json` and restores active sessions after restart.
+- The index stores thread ids and basic metadata only; full session transcripts are in `~/.codex/sessions`.
 - Relay fixes workspace root to the process startup directory (`process.cwd()`).
 - Ensure process user can read/write `~/.codex/sessions`.
+- Ensure process user can read/write `~/.relay/sessions.json`.
 - `.env.local` is no longer used for runtime config.
 
 ## Quality checks
