@@ -1,8 +1,10 @@
+import process from 'node:process'
 import * as Lark from '@larksuiteoapi/node-sdk'
 import { t } from '@lingui/core/macro'
+import { parseCommand } from './bot/commands'
 import { handleIncomingText } from './bot/handler'
 import { shouldProcessMessage } from './bot/message-filter'
-import { buildReplyForMessageEvent } from './bot/relay'
+import { buildReplyForMessageEvent, stripMentionTags } from './bot/relay'
 import { createCodexThread, runCodexTurn } from './codex/app-server'
 import { listOpenProjects } from './codex/state'
 import { loadConfigOrExit } from './core/startup'
@@ -11,6 +13,7 @@ import { initializeI18n } from './i18n/runtime'
 import {
   clearSession,
   getSession,
+  initializeSessionStore,
   setSession,
   withSessionLock,
 } from './session/store'
@@ -18,6 +21,18 @@ import type { FeishuReceiveMessageEvent } from './feishu/reply'
 
 const relayConfig = loadConfigOrExit()
 initializeI18n(relayConfig.locale)
+
+try {
+  initializeSessionStore({
+    homeDir: relayConfig.homeDir,
+    workspaceCwd: relayConfig.workspaceCwd,
+  })
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error)
+  console.error(t`Failed to start relay: ${message}`)
+  process.exit(1)
+}
+
 const BUSY_MESSAGE = t`Currently busy. Please try again later.`
 
 const client = new Lark.Client(relayConfig.baseConfig)
@@ -58,7 +73,9 @@ async function processIncomingEvent(
       return
     }
 
-    await sendReply(client, data, reply)
+    await sendReply(client, data, reply, {
+      includeThreadTag: shouldAttachThreadTag(data),
+    })
   } catch (error) {
     console.error('failed to handle Feishu message', error)
     try {
@@ -71,6 +88,37 @@ async function processIncomingEvent(
       console.error('failed to send failure message', replyError)
     }
   }
+}
+
+function shouldAttachThreadTag(data: FeishuReceiveMessageEvent): boolean {
+  const rawText = parseEventText(data.message.content)
+  if (rawText === null) {
+    return false
+  }
+
+  const normalizedText = stripMentionTags(rawText).trim()
+  if (normalizedText.length === 0) {
+    return false
+  }
+
+  return parseCommand(normalizedText).type === 'prompt'
+}
+
+function parseEventText(content: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(content)
+    if (!isRecord(parsed)) {
+      return null
+    }
+
+    return typeof parsed.text === 'string' ? parsed.text : null
+  } catch {
+    return null
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 const eventDispatcher = new Lark.EventDispatcher({}).register({

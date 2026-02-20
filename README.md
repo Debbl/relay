@@ -68,7 +68,7 @@ pnpm dev
 2. Bot replies immediately with a processing echo:
    - `已收到，正在处理任务: <task preview>`
 3. Bot sends final Codex result when done.
-4. After `/new`, the first normal prompt triggers one extra model call to auto-generate a session title.
+4. After `/new`, the first normal prompt is used directly as the session title (with normalization and truncation).
 
 ### P2P chat
 
@@ -90,10 +90,11 @@ pnpm dev
 
 ## Notes
 
-- Sessions are in-memory only; restarting the process resets session mapping.
-- Codex runtime still stores its own threads under `~/.codex/sessions`.
+- Relay stores session index at `~/.relay/sessions.json` and restores active sessions after restart.
+- The index stores thread ids and basic metadata only; full session transcripts are in `~/.codex/sessions`.
 - Relay fixes workspace root to the process startup directory (`process.cwd()`).
 - Ensure process user can read/write `~/.codex/sessions`.
+- Ensure process user can read/write `~/.relay/sessions.json`.
 - `.env.local` is no longer used for runtime config.
 
 ## Quality checks

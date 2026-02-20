@@ -55,6 +55,7 @@ export interface RelayConfig {
     appSecret: string
     domain: string
   }
+  homeDir: string
   botOpenId?: string
   codexBin: string
   codexTimeoutMs?: number
@@ -96,6 +97,7 @@ export function loadRelayConfig(
       appSecret,
       domain,
     },
+    homeDir,
     botOpenId: readOptionalString(parsed.env.BOT_OPEN_ID, 'BOT_OPEN_ID'),
     codexBin:
       readOptionalString(parsed.env.CODEX_BIN, 'CODEX_BIN') ??
