@@ -11,6 +11,7 @@ import {
 import {
   clearSession,
   getSession,
+  getSessionKey,
   setSession,
   withSessionLock,
 } from './session-store'
@@ -164,16 +165,12 @@ function resolveSenderId(
 
 async function sendReply(
   larkClient: Lark.Client,
-  data: {
-    message: {
-      chat_id: string
-      chat_type: string
-      message_id: string
-    }
-  },
+  data: FeishuReceiveMessageEvent,
   text: string,
 ): Promise<void> {
-  const content = JSON.stringify({ text })
+  const content = JSON.stringify({
+    text: formatReplyText(resolveReplyPrefix(data), text),
+  })
 
   if (data.message.chat_type === 'p2p') {
     await larkClient.im.v1.message.create({
@@ -198,4 +195,42 @@ async function sendReply(
       content,
     },
   })
+}
+
+function formatReplyText(prefix: string, text: string): string {
+  const normalizedText = text.trim()
+  if (normalizedText.length === 0) {
+    return prefix
+  }
+
+  return `${prefix} ${normalizedText}`
+}
+
+function resolveReplyPrefix(data: FeishuReceiveMessageEvent): string {
+  const basePrefix = relayConfig.replyPrefix.trim() || '【Relay】'
+  const senderId = resolveSenderId(data.sender.sender_id)
+  if (!senderId) {
+    return basePrefix
+  }
+
+  const sessionKey = getSessionKey({
+    chatType: data.message.chat_type,
+    chatId: data.message.chat_id,
+    userId: senderId,
+  })
+  const session = getSession(sessionKey)
+  if (!session) {
+    return basePrefix
+  }
+
+  const normalizedTitle = session.title?.trim()
+  if (normalizedTitle && normalizedTitle.length > 0) {
+    return `${basePrefix}[${normalizedTitle}]`
+  }
+
+  return `${basePrefix}[${shortThreadId(session.threadId)}]`
+}
+
+function shortThreadId(threadId: string): string {
+  return threadId.length <= 8 ? threadId : threadId.slice(-8)
 }

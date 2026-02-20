@@ -31,7 +31,8 @@ Config fields:
   "APP_SECRET": "your_app_secret",
   "BOT_OPEN_ID": "ou_xxx",
   "CODEX_BIN": "codex",
-  "CODEX_TIMEOUT_MS": null
+  "CODEX_TIMEOUT_MS": null,
+  "REPLY_PREFIX": "【Relay】"
 }
 ```
 
@@ -40,6 +41,7 @@ Config fields:
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
   - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
+  - `REPLY_PREFIX` (default: `【Relay】`; prepended to every Feishu reply. If session title exists, it is appended; otherwise thread short ID is appended).
 
 ## Run
 
@@ -56,6 +58,7 @@ pnpm dev
 2. Bot replies immediately with a processing echo:
    - `已收到，正在处理任务: <task preview>`
 3. Bot sends final Codex result when done.
+4. After `/new`, the first normal prompt triggers one extra model call to auto-generate a session title.
 
 ### P2P chat
 

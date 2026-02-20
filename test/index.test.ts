@@ -104,6 +104,7 @@ describe('message routing', () => {
       mode: 'default',
       model: 'gpt-5.3-codex',
       cwd: '/Users/home/workspace/relay',
+      title: '现有标题',
     })
 
     const createThread = vi.fn()
@@ -113,6 +114,7 @@ describe('message routing', () => {
       model: 'gpt-5.3-codex',
       mode: 'default',
       message: 'reply-from-codex',
+      cwd: '/Users/home/workspace/relay',
     })
 
     const reply = await buildReplyForMessageEvent(
@@ -145,9 +147,285 @@ describe('message routing', () => {
         mode: 'default',
         model: 'gpt-5.3-codex',
         cwd: '/Users/home/workspace/relay',
+        title: '现有标题',
       },
     })
+    expect(runTurn).toHaveBeenCalledTimes(1)
     expect(reply).toBe('reply-from-codex')
+  })
+
+  it('generates session title via model for first prompt after /new', async () => {
+    const key = getSessionKey({
+      chatType: 'group',
+      chatId: 'chat_1',
+      userId: 'user_1',
+    })
+
+    setSession(key, {
+      threadId: 'existing_thread',
+      mode: 'default',
+      model: 'gpt-5.3-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
+
+    const createThread = vi.fn()
+    const listOpenProjects = vi.fn()
+    const runTurn = vi.fn().mockResolvedValue({
+      threadId: 'existing_thread',
+      model: 'gpt-5.3-codex',
+      mode: 'default',
+      message: 'reply-from-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
+    runTurn
+      .mockResolvedValueOnce({
+        threadId: 'existing_thread',
+        model: 'gpt-5.3-codex',
+        mode: 'default',
+        message: 'reply-from-codex',
+        cwd: '/Users/home/workspace/relay',
+      })
+      .mockResolvedValueOnce({
+        threadId: 'title_thread',
+        model: 'gpt-5.3-codex',
+        mode: 'default',
+        message: '“修复登录流程”\n说明',
+        cwd: '/Users/home/workspace/relay',
+      })
+
+    await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'group',
+        text: '<at user_id="bot">bot</at> fix login bug',
+        mentions: [{ id: { open_id: 'bot_open_id' } }],
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(runTurn).toHaveBeenNthCalledWith(1, {
+      prompt: 'fix login bug',
+      mode: 'default',
+      session: {
+        threadId: 'existing_thread',
+        mode: 'default',
+        model: 'gpt-5.3-codex',
+        cwd: '/Users/home/workspace/relay',
+      },
+    })
+    expect(runTurn).toHaveBeenNthCalledWith(2, {
+      prompt: expect.stringContaining('用户消息: fix login bug'),
+      mode: 'default',
+      session: null,
+    })
+    expect(getSession(key)?.title).toBe('修复登录流程')
+  })
+
+  it('falls back to prompt truncation when title generation fails', async () => {
+    const key = getSessionKey({
+      chatType: 'group',
+      chatId: 'chat_1',
+      userId: 'user_1',
+    })
+
+    setSession(key, {
+      threadId: 'existing_thread',
+      mode: 'default',
+      model: 'gpt-5.3-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
+
+    const createThread = vi.fn()
+    const listOpenProjects = vi.fn()
+    const runTurn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        threadId: 'existing_thread',
+        model: 'gpt-5.3-codex',
+        mode: 'default',
+        message: 'reply-from-codex',
+        cwd: '/Users/home/workspace/relay',
+      })
+      .mockRejectedValueOnce(new Error('timeout'))
+
+    await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'group',
+        text: '<at user_id="bot">bot</at> fix login bug in production env',
+        mentions: [{ id: { open_id: 'bot_open_id' } }],
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(getSession(key)?.title).toBe('fix login bug in prod...')
+  })
+
+  it('falls back when model title is blank', async () => {
+    const key = getSessionKey({
+      chatType: 'group',
+      chatId: 'chat_1',
+      userId: 'user_1',
+    })
+
+    setSession(key, {
+      threadId: 'existing_thread',
+      mode: 'default',
+      model: 'gpt-5.3-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
+
+    const createThread = vi.fn()
+    const listOpenProjects = vi.fn()
+    const runTurn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        threadId: 'existing_thread',
+        model: 'gpt-5.3-codex',
+        mode: 'default',
+        message: 'reply-from-codex',
+        cwd: '/Users/home/workspace/relay',
+      })
+      .mockResolvedValueOnce({
+        threadId: 'title_thread',
+        model: 'gpt-5.3-codex',
+        mode: 'default',
+        message: ' \n ',
+        cwd: '/Users/home/workspace/relay',
+      })
+
+    await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'group',
+        text: '<at user_id="bot">bot</at>   investigate payment timeout   ',
+        mentions: [{ id: { open_id: 'bot_open_id' } }],
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(getSession(key)?.title).toBe('investigate payment t...')
+  })
+
+  it('includes title in /status output', async () => {
+    setSession(
+      getSessionKey({
+        chatType: 'group',
+        chatId: 'chat_1',
+        userId: 'user_1',
+      }),
+      {
+        threadId: 'existing_thread',
+        mode: 'default',
+        model: 'gpt-5.3-codex',
+        cwd: '/Users/home/workspace/relay',
+        title: '修复登录流程',
+      },
+    )
+
+    const createThread = vi.fn()
+    const runTurn = vi.fn()
+    const listOpenProjects = vi.fn()
+
+    const reply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'group',
+        text: '<at user_id="bot">bot</at> /status',
+        mentions: [{ id: { open_id: 'bot_open_id' } }],
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(reply).toContain('title: 修复登录流程')
+  })
+
+  it('does not generate title when no session exists before prompt', async () => {
+    const createThread = vi.fn()
+    const listOpenProjects = vi.fn()
+    const runTurn = vi.fn().mockResolvedValue({
+      threadId: 'new_thread',
+      model: 'gpt-5.3-codex',
+      mode: 'default',
+      message: 'reply-from-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
+
+    await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'group',
+        text: '<at user_id="bot">bot</at> start from scratch',
+        mentions: [{ id: { open_id: 'bot_open_id' } }],
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    const key = getSessionKey({
+      chatType: 'group',
+      chatId: 'chat_1',
+      userId: 'user_1',
+    })
+    expect(runTurn).toHaveBeenCalledTimes(1)
+    expect(getSession(key)?.title).toBeUndefined()
   })
 
   it('ignores bot self messages in p2p chat', async () => {
