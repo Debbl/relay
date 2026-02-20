@@ -8,7 +8,7 @@
 
 1. Node.js 20+ 和 `pnpm`。
 2. 已安装并登录 `codex` CLI（`codex login`）。
-3. 已创建并启用机器人能力的飞书应用。
+3. 已创建并启用机器人能力的飞书应用 [创建机器人](https://open.feishu.cn/document/develop-an-echo-bot/introduction)。
 4. 已开启飞书事件订阅 `im.message.receive_v1`。
 5. 飞书机器人权限：
    - 与机器人单聊（P2P）消息。
@@ -28,17 +28,19 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
 
 ```json
 {
-  "BASE_DOMAIN": "https://open.feishu.cn",
-  "APP_ID": "your_app_id",
-  "APP_SECRET": "your_app_secret",
-  "BOT_OPEN_ID": "ou_xxx",
-  "CODEX_BIN": "codex",
-  "CODEX_TIMEOUT_MS": null,
-  "REPLY_PREFIX": "【Relay】"
+  "env": {
+    "BASE_DOMAIN": "https://open.feishu.cn",
+    "APP_ID": "your_app_id",
+    "APP_SECRET": "your_app_secret",
+    "BOT_OPEN_ID": "ou_xxx",
+    "CODEX_BIN": "codex",
+    "CODEX_TIMEOUT_MS": null,
+    "REPLY_PREFIX": "【Relay】"
+  }
 }
 ```
 
-- 必填字段：`BASE_DOMAIN`、`APP_ID`、`APP_SECRET`。
+- 必填字段（放在 `env` 内）：`BASE_DOMAIN`、`APP_ID`、`APP_SECRET`。
 - 可选字段：
   - `BOT_OPEN_ID`（为空或缺失表示禁用）。
   - `CODEX_BIN`（默认：`codex`）。

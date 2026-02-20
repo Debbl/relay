@@ -8,7 +8,7 @@ A Feishu bot that forwards chat messages to Codex and returns results in chat.
 
 1. Node.js 20+ and `pnpm`.
 2. `codex` CLI installed and logged in (`codex login`).
-3. Feishu app with bot capability enabled.
+3. Feishu app with bot capability enabled [create-bot](https://open.feishu.cn/document/develop-an-echo-bot/introduction).
 4. Feishu event subscription enabled for `im.message.receive_v1`.
 5. Feishu bot permissions:
    - P2P messages to bot.
@@ -28,17 +28,19 @@ Config fields:
 
 ```json
 {
-  "BASE_DOMAIN": "https://open.feishu.cn",
-  "APP_ID": "your_app_id",
-  "APP_SECRET": "your_app_secret",
-  "BOT_OPEN_ID": "ou_xxx",
-  "CODEX_BIN": "codex",
-  "CODEX_TIMEOUT_MS": null,
-  "REPLY_PREFIX": "【Relay】"
+  "env": {
+    "BASE_DOMAIN": "https://open.feishu.cn",
+    "APP_ID": "your_app_id",
+    "APP_SECRET": "your_app_secret",
+    "BOT_OPEN_ID": "ou_xxx",
+    "CODEX_BIN": "codex",
+    "CODEX_TIMEOUT_MS": null,
+    "REPLY_PREFIX": "【Relay】"
+  }
 }
 ```
 
-- Required fields: `BASE_DOMAIN`, `APP_ID`, `APP_SECRET`.
+- Required fields (inside `env`): `BASE_DOMAIN`, `APP_ID`, `APP_SECRET`.
 - Optional fields:
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
