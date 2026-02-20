@@ -20,6 +20,7 @@ import type { ReceiveMessageEvent } from './relay-bot'
 
 const relayConfig = loadConfigOrExit()
 const BUSY_MESSAGE = '当前正忙，请稍后再试。'
+const FALLBACK_REPLY_TAG = '[no-thread]'
 
 const client = new Lark.Client(relayConfig.baseConfig)
 const wsClient = new Lark.WSClient(relayConfig.baseConfig)
@@ -169,7 +170,7 @@ async function sendReply(
   text: string,
 ): Promise<void> {
   const content = JSON.stringify({
-    text: formatReplyText(resolveReplyPrefix(data), text),
+    text: formatReplyTextWithThreadId(data, text),
   })
 
   if (data.message.chat_type === 'p2p') {
@@ -197,20 +198,23 @@ async function sendReply(
   })
 }
 
-function formatReplyText(prefix: string, text: string): string {
+function formatReplyTextWithThreadId(
+  data: FeishuReceiveMessageEvent,
+  text: string,
+): string {
+  const replyTag = resolveReplyTag(data)
   const normalizedText = text.trim()
   if (normalizedText.length === 0) {
-    return prefix
+    return `${replyTag}\n`
   }
 
-  return `${prefix} ${normalizedText}`
+  return `${replyTag}\n\n${normalizedText}`
 }
 
-function resolveReplyPrefix(data: FeishuReceiveMessageEvent): string {
-  const basePrefix = relayConfig.replyPrefix.trim() || '【Relay】'
+function resolveReplyTag(data: FeishuReceiveMessageEvent): string {
   const senderId = resolveSenderId(data.sender.sender_id)
   if (!senderId) {
-    return basePrefix
+    return FALLBACK_REPLY_TAG
   }
 
   const sessionKey = getSessionKey({
@@ -219,18 +223,9 @@ function resolveReplyPrefix(data: FeishuReceiveMessageEvent): string {
     userId: senderId,
   })
   const session = getSession(sessionKey)
-  if (!session) {
-    return basePrefix
+  if (!session || session.threadId.trim().length === 0) {
+    return FALLBACK_REPLY_TAG
   }
 
-  const normalizedTitle = session.title?.trim()
-  if (normalizedTitle && normalizedTitle.length > 0) {
-    return `${basePrefix}[${normalizedTitle}]`
-  }
-
-  return `${basePrefix}[${shortThreadId(session.threadId)}]`
-}
-
-function shortThreadId(threadId: string): string {
-  return threadId.length <= 8 ? threadId : threadId.slice(-8)
+  return `[${session.threadId}]`
 }
