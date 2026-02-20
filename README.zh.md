@@ -4,6 +4,12 @@
 
 一个将飞书聊天消息转发给 Codex，并将结果回传到聊天中的机器人。
 
+## 安装
+
+```bash
+npm i @debbl/relay@latest -g
+```
+
 ## 前置条件
 
 1. Node.js 20+ 和 `pnpm`。

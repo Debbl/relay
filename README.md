@@ -4,6 +4,12 @@
 
 A Feishu bot that forwards chat messages to Codex and returns results in chat.
 
+## Install
+
+```bash
+npm i @debbl/relay@latest -g
+```
+
 ## Prerequisites
 
 1. Node.js 20+ and `pnpm`.
