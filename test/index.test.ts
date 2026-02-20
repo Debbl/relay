@@ -525,7 +525,7 @@ describe('message routing', () => {
       },
     )
 
-    expect(reply).toContain('当前工作目录:')
+    expect(reply).toContain('当前工作目录：')
     expect(reply).toContain('/Users/ding/i/relay')
   })
 })
