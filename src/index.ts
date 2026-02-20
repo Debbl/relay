@@ -1,8 +1,9 @@
-/* eslint-disable n/prefer-global/process */
+import process from 'node:process'
 import * as Lark from '@larksuiteoapi/node-sdk'
 import { handleIncomingText } from './bot-handler'
 import { createCodexThread, runCodexTurn } from './codex-app-server'
 import { listOpenProjects } from './codex-state'
+import { loadRelayConfig } from './config'
 import {
   buildReplyForMessageEvent,
   shouldHandleGroupMessage,
@@ -13,22 +14,14 @@ import {
   setSession,
   withSessionLock,
 } from './session-store'
+import type { RelayConfig } from './config'
 import type { ReceiveMessageEvent } from './relay-bot'
 
-const baseConfig = {
-  appId: process.env.APP_ID!,
-  appSecret: process.env.APP_SECRET!,
-  domain: process.env.BASE_DOMAIN!,
-} as const
-
-const codexBin = process.env.CODEX_BIN ?? 'codex'
-const codexTimeoutMs = parseTimeoutMs(process.env.CODEX_TIMEOUT_MS)
-const botOpenId = process.env.BOT_OPEN_ID
-const workspaceCwd = process.cwd()
+const relayConfig = loadConfigOrExit()
 const BUSY_MESSAGE = '当前正忙，请稍后再试。'
 
-const client = new Lark.Client(baseConfig)
-const wsClient = new Lark.WSClient(baseConfig)
+const client = new Lark.Client(relayConfig.baseConfig)
+const wsClient = new Lark.WSClient(relayConfig.baseConfig)
 let isTaskRunning = false
 
 interface FeishuReceiveMessageEvent extends ReceiveMessageEvent {
@@ -65,17 +58,21 @@ const eventDispatcher = new Lark.EventDispatcher({}).register({
 
 wsClient.start({ eventDispatcher })
 
-function parseTimeoutMs(raw: string | undefined): number {
-  if (!raw) {
-    return 180_000
+function loadConfigOrExit(): RelayConfig {
+  try {
+    return loadRelayConfig()
+  } catch (error) {
+    console.error(formatStartupError(error))
+    process.exit(1)
+  }
+}
+
+function formatStartupError(error: unknown): string {
+  if (error instanceof Error) {
+    return `Failed to start relay: ${error.message}`
   }
 
-  const parsed = Number.parseInt(raw, 10)
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return 180_000
-  }
-
-  return parsed
+  return `Failed to start relay: ${String(error)}`
 }
 
 async function processIncomingEvent(
@@ -83,22 +80,22 @@ async function processIncomingEvent(
 ): Promise<void> {
   try {
     const reply = await buildReplyForMessageEvent(data, {
-      botOpenId,
+      botOpenId: relayConfig.botOpenId,
       handleIncomingText: (input) =>
         handleIncomingText(input, {
           createThread: (mode) =>
             createCodexThread({
               mode,
-              cwd: workspaceCwd,
-              codexBin,
-              timeoutMs: codexTimeoutMs,
+              cwd: relayConfig.workspaceCwd,
+              codexBin: relayConfig.codexBin,
+              timeoutMs: relayConfig.codexTimeoutMs,
             }),
           runTurn: (params) =>
             runCodexTurn({
               ...params,
-              cwd: workspaceCwd,
-              codexBin,
-              timeoutMs: codexTimeoutMs,
+              cwd: relayConfig.workspaceCwd,
+              codexBin: relayConfig.codexBin,
+              timeoutMs: relayConfig.codexTimeoutMs,
             }),
           getSession,
           setSession,
@@ -132,7 +129,7 @@ function shouldProcessMessage(data: FeishuReceiveMessageEvent): boolean {
     return true
   }
 
-  return shouldHandleGroupMessage(data.message.mentions, botOpenId)
+  return shouldHandleGroupMessage(data.message.mentions, relayConfig.botOpenId)
 }
 
 function isMessageFromBot(data: FeishuReceiveMessageEvent): boolean {
@@ -141,12 +138,12 @@ function isMessageFromBot(data: FeishuReceiveMessageEvent): boolean {
     return true
   }
 
-  if (!botOpenId) {
+  if (!relayConfig.botOpenId) {
     return false
   }
 
   const senderId = resolveSenderId(data.sender.sender_id)
-  return senderId === botOpenId
+  return senderId === relayConfig.botOpenId
 }
 
 function resolveSenderId(
