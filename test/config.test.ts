@@ -30,13 +30,15 @@ describe('loadRelayConfig', () => {
     const content = fs.readFileSync(configPath, 'utf-8')
     const parsed = JSON.parse(content) as Record<string, unknown>
     expect(parsed).toMatchObject({
-      BASE_DOMAIN: 'https://open.feishu.cn',
-      APP_ID: 'your_app_id',
-      APP_SECRET: 'your_app_secret',
-      BOT_OPEN_ID: 'ou_xxx',
-      CODEX_BIN: 'codex',
-      CODEX_TIMEOUT_MS: null,
-      REPLY_PREFIX: '【Relay】',
+      env: {
+        BASE_DOMAIN: 'https://open.feishu.cn',
+        APP_ID: 'your_app_id',
+        APP_SECRET: 'your_app_secret',
+        BOT_OPEN_ID: 'ou_xxx',
+        CODEX_BIN: 'codex',
+        CODEX_TIMEOUT_MS: null,
+        REPLY_PREFIX: '【Relay】',
+      },
     })
   })
 
@@ -61,6 +63,37 @@ describe('loadRelayConfig', () => {
       },
       botOpenId: undefined,
       codexBin: 'codex',
+      codexTimeoutMs: undefined,
+      replyPrefix: '【Relay】',
+      workspaceCwd: '/workspace/relay',
+    })
+  })
+
+  it('loads env-wrapped config fields', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      env: {
+        BASE_DOMAIN: 'https://open.feishu.cn',
+        APP_ID: 'app_env_123',
+        APP_SECRET: 'secret_env_123',
+        BOT_OPEN_ID: 'ou_env_bot_123',
+        CODEX_BIN: '/opt/bin/codex',
+      },
+    })
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config).toEqual({
+      baseConfig: {
+        appId: 'app_env_123',
+        appSecret: 'secret_env_123',
+        domain: 'https://open.feishu.cn',
+      },
+      botOpenId: 'ou_env_bot_123',
+      codexBin: '/opt/bin/codex',
       codexTimeoutMs: undefined,
       replyPrefix: '【Relay】',
       workspaceCwd: '/workspace/relay',
@@ -164,6 +197,20 @@ describe('loadRelayConfig', () => {
         workspaceCwd: '/workspace/relay',
       }),
     ).toThrowError('APP_SECRET')
+  })
+
+  it('throws when env is not an object', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      env: 'not-an-object',
+    })
+
+    expect(() =>
+      loadRelayConfig({
+        homeDir,
+        workspaceCwd: '/workspace/relay',
+      }),
+    ).toThrowError('env must be a JSON object')
   })
 })
 

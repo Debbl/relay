@@ -5,7 +5,7 @@ import process from 'node:process'
 
 const DEFAULT_CODEX_BIN = 'codex'
 
-const TEMPLATE_CONFIG: Required<RelayConfigFile> = {
+const TEMPLATE_ENV_CONFIG: Required<RelayConfigEnv> = {
   BASE_DOMAIN: 'https://open.feishu.cn',
   APP_ID: 'your_app_id',
   APP_SECRET: 'your_app_secret',
@@ -15,7 +15,11 @@ const TEMPLATE_CONFIG: Required<RelayConfigFile> = {
   REPLY_PREFIX: '【Relay】',
 }
 
-export interface RelayConfigFile {
+const TEMPLATE_CONFIG: { env: Required<RelayConfigEnv> } = {
+  env: TEMPLATE_ENV_CONFIG,
+}
+
+export interface RelayConfigEnv {
   BASE_DOMAIN?: string
   APP_ID?: string
   APP_SECRET?: string
@@ -23,6 +27,10 @@ export interface RelayConfigFile {
   CODEX_BIN?: string
   CODEX_TIMEOUT_MS?: number | string | null
   REPLY_PREFIX?: string
+}
+
+interface RelayConfigFile extends RelayConfigEnv {
+  env?: RelayConfigEnv
 }
 
 export interface RelayConfig {
@@ -95,7 +103,7 @@ function ensureConfigTemplate(configDir: string, configPath: string): void {
   )
 }
 
-function parseConfigFile(configPath: string): RelayConfigFile {
+function parseConfigFile(configPath: string): RelayConfigEnv {
   let raw: string
   try {
     raw = fs.readFileSync(configPath, 'utf-8')
@@ -120,7 +128,18 @@ function parseConfigFile(configPath: string): RelayConfigFile {
     )
   }
 
-  return parsed as RelayConfigFile
+  const configObject = parsed as RelayConfigFile
+  if (configObject.env === undefined) {
+    return configObject
+  }
+
+  if (!isObject(configObject.env)) {
+    throw new Error(
+      `Invalid relay config at ${configPath}: env must be a JSON object.`,
+    )
+  }
+
+  return configObject.env
 }
 
 function readRequiredString(value: unknown, field: string): string {
