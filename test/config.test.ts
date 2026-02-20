@@ -37,7 +37,6 @@ describe('loadRelayConfig', () => {
         BOT_OPEN_ID: 'ou_xxx',
         CODEX_BIN: 'codex',
         CODEX_TIMEOUT_MS: null,
-        REPLY_PREFIX: '【Relay】',
       },
     })
   })
@@ -107,7 +106,6 @@ describe('loadRelayConfig', () => {
       BOT_OPEN_ID: 'ou_bot_123',
       CODEX_BIN: '/usr/local/bin/codex',
       CODEX_TIMEOUT_MS: 240000,
-      REPLY_PREFIX: '[MyBot]',
     })
 
     const config = loadRelayConfig({
@@ -124,7 +122,6 @@ describe('loadRelayConfig', () => {
       botOpenId: 'ou_bot_123',
       codexBin: '/usr/local/bin/codex',
       codexTimeoutMs: 240000,
-      replyPrefix: '[MyBot]',
       workspaceCwd: '/workspace/relay',
     })
   })
