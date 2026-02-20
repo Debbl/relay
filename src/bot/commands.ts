@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import type { ChatMode, ParsedCommand } from '../core/types'
 
 const COMMAND_HELP = '/help'
@@ -7,22 +8,26 @@ const COMMAND_STATUS = '/status'
 const COMMAND_PROJECTS = '/projects'
 const COMMAND_RESET = '/reset'
 
-export const HELP_TEXT = [
-  '可用命令:',
-  '/help - 查看帮助',
-  '/new [default|plan] - 新建会话',
-  '/mode <default|plan> - 切换当前会话模式',
-  '/status - 查看当前会话状态',
-  '/projects - 查看当前工作目录',
-  '/reset - 清空当前会话',
-].join('\n')
+export function getHelpText(): string {
+  return [
+    t`Available commands:`,
+    t`/help - Show help`,
+    t`/new [default|plan] - Create a new session`,
+    t`/mode <default|plan> - Switch current session mode`,
+    t`/status - Show current session status`,
+    t`/projects - Show current working directories`,
+    t`/reset - Clear current session`,
+  ].join('\n')
+}
 
 export function parseCommand(input: string): ParsedCommand {
   const normalized = input.trim()
+  const helpText = getHelpText()
+
   if (normalized.length === 0) {
     return {
       type: 'invalid',
-      message: `命令不能为空。\n\n${HELP_TEXT}`,
+      message: t`Command cannot be empty.\n\n${helpText}`,
     }
   }
 
@@ -37,7 +42,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/help 不接受参数。\n\n${HELP_TEXT}`,
+        message: t`/help does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -48,7 +53,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 2) {
       return {
         type: 'invalid',
-        message: `/new 只接受一个可选参数: default 或 plan。\n\n${HELP_TEXT}`,
+        message: t`/new accepts at most one optional argument: default or plan.\n\n${helpText}`,
       }
     }
 
@@ -61,7 +66,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: `无效模式 "${modeToken}"，仅支持 default 或 plan。\n\n${HELP_TEXT}`,
+        message: t`Invalid mode "${modeToken}", only default or plan are supported.\n\n${helpText}`,
       }
     }
 
@@ -73,7 +78,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!modeToken || parts.length > 2) {
       return {
         type: 'invalid',
-        message: `/mode 需要一个参数: default 或 plan。\n\n${HELP_TEXT}`,
+        message: t`/mode requires one argument: default or plan.\n\n${helpText}`,
       }
     }
 
@@ -81,7 +86,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: `无效模式 "${modeToken}"，仅支持 default 或 plan。\n\n${HELP_TEXT}`,
+        message: t`Invalid mode "${modeToken}", only default or plan are supported.\n\n${helpText}`,
       }
     }
 
@@ -92,7 +97,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/status 不接受参数。\n\n${HELP_TEXT}`,
+        message: t`/status does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -103,7 +108,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/projects 不接受参数。\n\n${HELP_TEXT}`,
+        message: t`/projects does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -114,7 +119,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/reset 不接受参数。\n\n${HELP_TEXT}`,
+        message: t`/reset does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -123,7 +128,7 @@ export function parseCommand(input: string): ParsedCommand {
 
   return {
     type: 'invalid',
-    message: `未知命令 "${command ?? normalized}"。\n\n${HELP_TEXT}`,
+    message: t`Unknown command "${command ?? normalized}".\n\n${helpText}`,
   }
 }
 

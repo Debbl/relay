@@ -1,13 +1,19 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRelayConfig } from '../src/core/config'
+import { initializeI18n } from '../src/i18n/runtime'
 
 const tempHomes: string[] = []
 
 describe('loadRelayConfig', () => {
+  beforeEach(() => {
+    initializeI18n('en')
+  })
+
   afterEach(() => {
+    vi.restoreAllMocks()
     for (const home of tempHomes) {
       fs.rmSync(home, { recursive: true, force: true })
     }
@@ -30,6 +36,7 @@ describe('loadRelayConfig', () => {
     const content = fs.readFileSync(configPath, 'utf-8')
     const parsed = JSON.parse(content) as Record<string, unknown>
     expect(parsed).toMatchObject({
+      locale: 'en',
       env: {
         BASE_DOMAIN: 'https://open.feishu.cn',
         APP_ID: 'your_app_id',
@@ -64,12 +71,14 @@ describe('loadRelayConfig', () => {
       codexBin: 'codex',
       codexTimeoutMs: undefined,
       workspaceCwd: '/workspace/relay',
+      locale: 'en',
     })
   })
 
   it('loads env-wrapped config fields', () => {
     const homeDir = createTempHome()
     writeConfig(homeDir, {
+      locale: 'zh',
       env: {
         BASE_DOMAIN: 'https://open.feishu.cn',
         APP_ID: 'app_env_123',
@@ -94,6 +103,7 @@ describe('loadRelayConfig', () => {
       codexBin: '/opt/bin/codex',
       codexTimeoutMs: undefined,
       workspaceCwd: '/workspace/relay',
+      locale: 'zh',
     })
   })
 
@@ -106,6 +116,7 @@ describe('loadRelayConfig', () => {
       BOT_OPEN_ID: 'ou_bot_123',
       CODEX_BIN: '/usr/local/bin/codex',
       CODEX_TIMEOUT_MS: 240000,
+      locale: 'en',
     })
 
     const config = loadRelayConfig({
@@ -123,7 +134,48 @@ describe('loadRelayConfig', () => {
       codexBin: '/usr/local/bin/codex',
       codexTimeoutMs: 240000,
       workspaceCwd: '/workspace/relay',
+      locale: 'en',
     })
+  })
+
+  it('ignores locale inside env and falls back to top-level/default locale', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      env: {
+        BASE_DOMAIN: 'https://open.feishu.cn',
+        APP_ID: 'app_env_888',
+        APP_SECRET: 'secret_env_888',
+        locale: 'zh',
+      },
+    })
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config.locale).toBe('en')
+  })
+
+  it('falls back to en and warns when locale is unsupported', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      BASE_DOMAIN: 'https://open.feishu.cn',
+      APP_ID: 'app_777',
+      APP_SECRET: 'secret_777',
+      locale: 'fr',
+    })
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config.locale).toBe('en')
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Invalid relay config: locale "fr" is not supported. Falling back to en.',
+    )
   })
 
   it('treats null timeout as no timeout', () => {

@@ -1,7 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { parseCommand } from '../src/bot/commands'
+import { initializeI18n } from '../src/i18n/runtime'
 
 describe('parseCommand', () => {
+  beforeEach(() => {
+    initializeI18n('en')
+  })
+
   it('parses /new plan', () => {
     expect(parseCommand('/new plan')).toEqual({
       type: 'new',

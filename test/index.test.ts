@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handleIncomingText } from '../src/bot/handler'
 import { buildReplyForMessageEvent } from '../src/bot/relay'
+import { initializeI18n } from '../src/i18n/runtime'
 import {
   clearSession,
   getSession,
@@ -13,6 +14,7 @@ import type { BotSession } from '../src/core/types'
 
 describe('message routing', () => {
   beforeEach(() => {
+    initializeI18n('en')
     resetSessionStore()
   })
 
@@ -104,7 +106,7 @@ describe('message routing', () => {
       mode: 'default',
       model: 'gpt-5.3-codex',
       cwd: '/Users/home/workspace/relay',
-      title: '现有标题',
+      title: 'Existing title',
     })
 
     const createThread = vi.fn()
@@ -147,7 +149,7 @@ describe('message routing', () => {
         mode: 'default',
         model: 'gpt-5.3-codex',
         cwd: '/Users/home/workspace/relay',
-        title: '现有标题',
+        title: 'Existing title',
       },
     })
     expect(runTurn).toHaveBeenCalledTimes(1)
@@ -189,7 +191,7 @@ describe('message routing', () => {
         threadId: 'title_thread',
         model: 'gpt-5.3-codex',
         mode: 'default',
-        message: '“修复登录流程”\n说明',
+        message: '"Fix login flow"\nnotes',
         cwd: '/Users/home/workspace/relay',
       })
 
@@ -226,11 +228,11 @@ describe('message routing', () => {
       },
     })
     expect(runTurn).toHaveBeenNthCalledWith(2, {
-      prompt: expect.stringContaining('用户消息: fix login bug'),
+      prompt: expect.stringContaining('User message: fix login bug'),
       mode: 'default',
       session: null,
     })
-    expect(getSession(key)?.title).toBe('修复登录流程')
+    expect(getSession(key)?.title).toBe('Fix login flow')
   })
 
   it('falls back to prompt truncation when title generation fails', async () => {
@@ -355,7 +357,7 @@ describe('message routing', () => {
         mode: 'default',
         model: 'gpt-5.3-codex',
         cwd: '/Users/home/workspace/relay',
-        title: '修复登录流程',
+        title: 'Fix login flow',
       },
     )
 
@@ -384,7 +386,7 @@ describe('message routing', () => {
       },
     )
 
-    expect(reply).toContain('title: 修复登录流程')
+    expect(reply).toContain('title: Fix login flow')
   })
 
   it('does not generate title when no session exists before prompt', async () => {
@@ -436,7 +438,7 @@ describe('message routing', () => {
     const reply = await buildReplyForMessageEvent(
       createEvent({
         chatType: 'p2p',
-        text: '已收到，正在处理任务: hello',
+        text: 'received and processing task: hello',
         senderOpenId: 'bot_open_id',
         senderType: 'APP',
       }),
@@ -490,8 +492,63 @@ describe('message routing', () => {
     expect(createThread).not.toHaveBeenCalled()
     expect(runTurn).not.toHaveBeenCalled()
     expect(listOpenProjects).toHaveBeenCalledOnce()
-    expect(reply).toContain('当前工作目录:')
+    expect(reply).toContain('Current working directories:')
     expect(reply).toContain('/Users/ding/i/relay')
+  })
+
+  it('returns localized copy when locale is zh', async () => {
+    const createThread = vi.fn()
+    const runTurn = vi.fn()
+    const listOpenProjects = vi.fn().mockResolvedValue({
+      roots: ['/Users/ding/i/relay'],
+    })
+
+    initializeI18n('en')
+    const englishReply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'p2p',
+        text: '/projects',
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    initializeI18n('zh')
+    const localizedReply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'p2p',
+        text: '/projects',
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
+    expect(englishReply).toContain('Current working directories:')
+    expect(localizedReply).not.toContain('Current working directories:')
+    expect(localizedReply).not.toBe(englishReply)
+    expect(localizedReply).toContain('/Users/ding/i/relay')
   })
 })
 

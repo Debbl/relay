@@ -2,3 +2,9 @@ dist
 node_modules
 .DS_Store
 .env.local
+
+# swc
+.swc
+
+# Lingui
+src/locales/**/messages.json

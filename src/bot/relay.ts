@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import {
   isMessageFromBot,
   resolveSenderId,
@@ -39,12 +40,12 @@ export async function buildReplyForMessageEvent(
   }
 
   if (event.message.message_type !== 'text') {
-    return '解析消息失败，请发送文本消息。'
+    return t`Failed to parse message. Please send a text message.`
   }
 
   const text = parseTextContent(event.message.content)
   if (!text) {
-    return '解析消息失败，请发送文本消息。'
+    return t`Failed to parse message. Please send a text message.`
   }
 
   if (
@@ -56,12 +57,12 @@ export async function buildReplyForMessageEvent(
 
   const senderId = resolveSenderId(event.sender.sender_id)
   if (!senderId) {
-    return '无法识别发送者，请稍后重试。'
+    return t`Cannot identify sender. Please try again later.`
   }
 
   const normalizedText = stripMentionTags(text).trim()
   if (normalizedText.length === 0) {
-    return '请发送文本消息。'
+    return t`Please send a text message.`
   }
 
   return deps.handleIncomingText({
