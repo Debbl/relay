@@ -1,5 +1,7 @@
 # relay
 
+[English](./README.md) | [简体中文](./README.zh.md)
+
 A Feishu bot that forwards chat messages to Codex and returns results in chat.
 
 ## Prerequisites
