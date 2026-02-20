@@ -12,34 +12,36 @@ A Feishu bot that forwards chat messages to Codex and returns results in chat.
    - P2P messages to bot.
    - Group messages `@` bot (or all group messages if you prefer).
 
-## Environment
+## Configuration
 
-Create `.env.local`:
+Relay reads configuration only from `~/.relay/config.json`.
 
-```bash
-cp .env.example .env.local
-```
-
-Set required values:
+Run `pnpm dev` once to auto-generate a template file (the process exits after creation), then edit:
 
 ```bash
-BASE_DOMAIN=https://open.feishu.cn
-APP_ID=your_app_id
-APP_SECRET=your_app_secret
+~/.relay/config.json
 ```
 
-Optional values:
+Config fields:
 
-```bash
-# Strict mention match in group chat. If set, only messages mentioning this bot open_id are handled.
-BOT_OPEN_ID=ou_xxx
-
-# Codex binary path (default: codex)
-CODEX_BIN=codex
-
-# Timeout per Codex task in milliseconds (default: 180000)
-CODEX_TIMEOUT_MS=180000
+```json
+{
+  "BASE_DOMAIN": "https://open.feishu.cn",
+  "APP_ID": "your_app_id",
+  "APP_SECRET": "your_app_secret",
+  "BOT_OPEN_ID": "ou_xxx",
+  "CODEX_BIN": "codex",
+  "CODEX_TIMEOUT_MS": null,
+  "REPLY_PREFIX": "【Relay】"
+}
 ```
+
+- Required fields: `BASE_DOMAIN`, `APP_ID`, `APP_SECRET`.
+- Optional fields:
+  - `BOT_OPEN_ID` (empty or missing means disabled).
+  - `CODEX_BIN` (default: `codex`).
+  - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
+  - `REPLY_PREFIX` (default: `【Relay】`; prepended to every Feishu reply. If session title exists, it is appended; otherwise thread short ID is appended).
 
 ## Run
 
@@ -56,6 +58,7 @@ pnpm dev
 2. Bot replies immediately with a processing echo:
    - `已收到，正在处理任务: <task preview>`
 3. Bot sends final Codex result when done.
+4. After `/new`, the first normal prompt triggers one extra model call to auto-generate a session title.
 
 ### P2P chat
 
@@ -81,6 +84,7 @@ pnpm dev
 - Codex runtime still stores its own threads under `~/.codex/sessions`.
 - Relay fixes workspace root to the process startup directory (`process.cwd()`).
 - Ensure process user can read/write `~/.codex/sessions`.
+- `.env.local` is no longer used for runtime config.
 
 ## Quality checks
 

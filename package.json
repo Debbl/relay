@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx --env-file .env.local ./src/index.ts",
+    "dev": "tsx ./src/index.ts",
     "build": "tsdown",
     "test": "vitest",
     "release": "bumpp",
@@ -36,8 +36,6 @@
     "@debbl/eslint-config": "^3.14.3",
     "@types/node": "^24.10.1",
     "bumpp": "^10.3.1",
-    "dotenv": "^17.3.1",
-    "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.1",
     "lint-staged": "^16.2.7",
     "simple-git-hooks": "^2.13.1",

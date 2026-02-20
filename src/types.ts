@@ -5,6 +5,7 @@ export interface BotSession {
   model: string
   mode: ChatMode
   cwd: string
+  title?: string
 }
 
 export interface SessionKeyInput {
