@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx ./src/index.ts",
+    "dev": "pnpm build && node ./bin/relay.mjs",
     "build": "tsdown",
     "test": "vitest",
     "i18n:extract": "lingui extract",
@@ -39,7 +39,10 @@
   },
   "devDependencies": {
     "@debbl/eslint-config": "^3.15.2",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.1",
     "@lingui/cli": "^5.9.1",
+    "@lingui/swc-plugin": "^5.11.0",
+    "@rollup/plugin-swc": "^0.4.0",
     "@types/node": "^24.10.13",
     "bumpp": "^10.4.1",
     "eslint": "^9.39.2",
@@ -48,6 +51,7 @@
     "tsdown": "^0.20.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "unplugin-lingui": "^0.0.8",
     "vitest": "^4.0.18"
   },
   "simple-git-hooks": {

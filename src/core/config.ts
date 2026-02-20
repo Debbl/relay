@@ -2,12 +2,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { MESSAGES } from '../i18n/messages'
+import { t } from '@lingui/core/macro'
 import {
   getDefaultLocale,
   initializeI18n,
   isSupportedLocale,
-  translate,
 } from '../i18n/runtime'
 import type { AppLocale } from '../i18n/runtime'
 
@@ -70,9 +69,7 @@ export function loadRelayConfig(
   if (!fs.existsSync(configPath)) {
     ensureConfigTemplate(configDir, configPath)
     throw new Error(
-      translate(MESSAGES.configErrorMissing, {
-        configPath,
-      }),
+      t`Relay config is missing. Template created at ${configPath}. Please edit this file and restart.`,
     )
   }
 
@@ -121,10 +118,7 @@ function parseConfigFile(configPath: string): RelayConfigEnv {
     raw = fs.readFileSync(configPath, 'utf-8')
   } catch (error) {
     throw new Error(
-      translate(MESSAGES.configErrorReadFailed, {
-        configPath,
-        error: formatError(error),
-      }),
+      t`Failed to read relay config at ${configPath}: ${formatError(error)}`,
     )
   }
 
@@ -133,18 +127,13 @@ function parseConfigFile(configPath: string): RelayConfigEnv {
     parsed = JSON.parse(raw)
   } catch (error) {
     throw new Error(
-      translate(MESSAGES.configErrorInvalidJson, {
-        configPath,
-        error: formatError(error),
-      }),
+      t`Invalid JSON in relay config at ${configPath}: ${formatError(error)}`,
     )
   }
 
   if (!isObject(parsed)) {
     throw new Error(
-      translate(MESSAGES.configErrorRootNotObject, {
-        configPath,
-      }),
+      t`Invalid relay config at ${configPath}: root must be a JSON object.`,
     )
   }
 
@@ -155,9 +144,7 @@ function parseConfigFile(configPath: string): RelayConfigEnv {
 
   if (!isObject(configObject.env)) {
     throw new Error(
-      translate(MESSAGES.configErrorEnvNotObject, {
-        configPath,
-      }),
+      t`Invalid relay config at ${configPath}: env must be a JSON object.`,
     )
   }
 
@@ -168,9 +155,7 @@ function readRequiredString(value: unknown, field: string): string {
   const normalized = readOptionalString(value, field)
   if (!normalized) {
     throw new Error(
-      translate(MESSAGES.configErrorRequiredString, {
-        field,
-      }),
+      t`Invalid relay config: ${field} is required and must be a non-empty string.`,
     )
   }
 
@@ -183,11 +168,7 @@ function readOptionalString(value: unknown, field: string): string | undefined {
   }
 
   if (typeof value !== 'string') {
-    throw new TypeError(
-      translate(MESSAGES.configErrorFieldMustString, {
-        field,
-      }),
-    )
+    throw new TypeError(t`Invalid relay config: ${field} must be a string.`)
   }
 
   const normalized = value.trim()
@@ -207,7 +188,9 @@ function readTimeoutMs(value: unknown): number | undefined {
     if (Number.isInteger(value) && value > 0) {
       return value
     }
-    throw new Error(translate(MESSAGES.configErrorTimeoutPositiveInteger))
+    throw new Error(
+      t`Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer.`,
+    )
   }
 
   if (typeof value === 'string') {
@@ -216,13 +199,17 @@ function readTimeoutMs(value: unknown): number | undefined {
       return undefined
     }
     if (!/^[1-9]\d*$/.test(trimmed)) {
-      throw new Error(translate(MESSAGES.configErrorTimeoutPositiveInteger))
+      throw new Error(
+        t`Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer.`,
+      )
     }
 
     return Number.parseInt(trimmed, 10)
   }
 
-  throw new Error(translate(MESSAGES.configErrorTimeoutPositiveInteger))
+  throw new Error(
+    t`Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer.`,
+  )
 }
 
 function readLocale(value: unknown): AppLocale {
@@ -234,9 +221,7 @@ function readLocale(value: unknown): AppLocale {
 
   if (typeof value !== 'string') {
     console.warn(
-      translate(MESSAGES.configWarnInvalidLocale, {
-        locale: formatInvalidLocale(value),
-      }),
+      t`Invalid relay config: LOCALE "${formatInvalidLocale(value)}" is not supported. Falling back to en.`,
     )
     return defaultLocale
   }
@@ -251,9 +236,7 @@ function readLocale(value: unknown): AppLocale {
   }
 
   console.warn(
-    translate(MESSAGES.configWarnInvalidLocale, {
-      locale: normalized,
-    }),
+    t`Invalid relay config: LOCALE "${normalized}" is not supported. Falling back to en.`,
   )
 
   return defaultLocale

@@ -1,4 +1,5 @@
 import * as Lark from '@larksuiteoapi/node-sdk'
+import { t } from '@lingui/core/macro'
 import { handleIncomingText } from './bot/handler'
 import { shouldProcessMessage } from './bot/message-filter'
 import { buildReplyForMessageEvent } from './bot/relay'
@@ -6,8 +7,7 @@ import { createCodexThread, runCodexTurn } from './codex/app-server'
 import { listOpenProjects } from './codex/state'
 import { loadConfigOrExit } from './core/startup'
 import { sendReply } from './feishu/reply'
-import { MESSAGES } from './i18n/messages'
-import { initializeI18n, translate } from './i18n/runtime'
+import { initializeI18n } from './i18n/runtime'
 import {
   clearSession,
   getSession,
@@ -18,7 +18,7 @@ import type { FeishuReceiveMessageEvent } from './feishu/reply'
 
 const relayConfig = loadConfigOrExit()
 initializeI18n(relayConfig.locale)
-const BUSY_MESSAGE = translate(MESSAGES.indexBusyMessage)
+const BUSY_MESSAGE = t`Currently busy. Please try again later.`
 
 const client = new Lark.Client(relayConfig.baseConfig)
 const wsClient = new Lark.WSClient(relayConfig.baseConfig)
@@ -65,7 +65,7 @@ async function processIncomingEvent(
       await sendReply(
         client,
         data,
-        translate(MESSAGES.indexErrorProcessMessage),
+        t`Failed to process message. Please try again later.`,
       )
     } catch (replyError) {
       console.error('failed to send failure message', replyError)

@@ -1,5 +1,4 @@
-import { MESSAGES } from '../i18n/messages'
-import { translate } from '../i18n/runtime'
+import { t } from '@lingui/core/macro'
 import type { ChatMode, ParsedCommand } from '../core/types'
 
 const COMMAND_HELP = '/help'
@@ -11,13 +10,13 @@ const COMMAND_RESET = '/reset'
 
 export function getHelpText(): string {
   return [
-    translate(MESSAGES.commandsHelpAvailable),
-    translate(MESSAGES.commandsHelpLineHelp),
-    translate(MESSAGES.commandsHelpLineNew),
-    translate(MESSAGES.commandsHelpLineMode),
-    translate(MESSAGES.commandsHelpLineStatus),
-    translate(MESSAGES.commandsHelpLineProjects),
-    translate(MESSAGES.commandsHelpLineReset),
+    t`Available commands:`,
+    t`/help - Show help`,
+    t`/new [default|plan] - Create a new session`,
+    t`/mode <default|plan> - Switch current session mode`,
+    t`/status - Show current session status`,
+    t`/projects - Show current working directories`,
+    t`/reset - Clear current session`,
   ].join('\n')
 }
 
@@ -28,7 +27,7 @@ export function parseCommand(input: string): ParsedCommand {
   if (normalized.length === 0) {
     return {
       type: 'invalid',
-      message: translate(MESSAGES.commandsErrorEmpty, { helpText }),
+      message: t`Command cannot be empty.\n\n${helpText}`,
     }
   }
 
@@ -43,7 +42,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorHelpNoArgs, { helpText }),
+        message: t`/help does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -54,7 +53,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 2) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorNewArgCount, { helpText }),
+        message: t`/new accepts at most one optional argument: default or plan.\n\n${helpText}`,
       }
     }
 
@@ -67,10 +66,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorInvalidMode, {
-          modeToken,
-          helpText,
-        }),
+        message: t`Invalid mode "${modeToken}", only default or plan are supported.\n\n${helpText}`,
       }
     }
 
@@ -82,7 +78,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!modeToken || parts.length > 2) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorModeNeedsArg, { helpText }),
+        message: t`/mode requires one argument: default or plan.\n\n${helpText}`,
       }
     }
 
@@ -90,10 +86,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorInvalidMode, {
-          modeToken,
-          helpText,
-        }),
+        message: t`Invalid mode "${modeToken}", only default or plan are supported.\n\n${helpText}`,
       }
     }
 
@@ -104,7 +97,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorStatusNoArgs, { helpText }),
+        message: t`/status does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -115,7 +108,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorProjectsNoArgs, { helpText }),
+        message: t`/projects does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -126,7 +119,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: translate(MESSAGES.commandsErrorResetNoArgs, { helpText }),
+        message: t`/reset does not accept arguments.\n\n${helpText}`,
       }
     }
 
@@ -135,10 +128,7 @@ export function parseCommand(input: string): ParsedCommand {
 
   return {
     type: 'invalid',
-    message: translate(MESSAGES.commandsErrorUnknownCommand, {
-      command: command ?? normalized,
-      helpText,
-    }),
+    message: t`Unknown command "${command ?? normalized}".\n\n${helpText}`,
   }
 }
 

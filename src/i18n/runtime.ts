@@ -1,8 +1,7 @@
 import { i18n } from '@lingui/core'
-import { messages as enMessages } from '../locales/en/messages.json'
-import { messages as zhMessages } from '../locales/zh/messages.json'
+import { messages as enMessages } from '../locales/en/messages.po'
+import { messages as zhMessages } from '../locales/zh/messages.po'
 import type { Messages } from '@lingui/core'
-import type { MessageText } from './messages'
 
 export type AppLocale = 'en' | 'zh'
 
@@ -36,14 +35,6 @@ export function isSupportedLocale(locale: string): locale is AppLocale {
 
 export function getDefaultLocale(): AppLocale {
   return DEFAULT_LOCALE
-}
-
-export function translate(
-  message: MessageText,
-  values?: Record<string, string | number>,
-): string {
-  ensureI18nInitialized()
-  return i18n._(message, values)
 }
 
 function resolveLocale(locale?: string): AppLocale {

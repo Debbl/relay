@@ -1,5 +1,4 @@
-import { MESSAGES } from '../i18n/messages'
-import { translate } from '../i18n/runtime'
+import { t } from '@lingui/core/macro'
 import {
   isMessageFromBot,
   resolveSenderId,
@@ -41,12 +40,12 @@ export async function buildReplyForMessageEvent(
   }
 
   if (event.message.message_type !== 'text') {
-    return translate(MESSAGES.relayErrorParseMessage)
+    return t`Failed to parse message. Please send a text message.`
   }
 
   const text = parseTextContent(event.message.content)
   if (!text) {
-    return translate(MESSAGES.relayErrorParseMessage)
+    return t`Failed to parse message. Please send a text message.`
   }
 
   if (
@@ -58,12 +57,12 @@ export async function buildReplyForMessageEvent(
 
   const senderId = resolveSenderId(event.sender.sender_id)
   if (!senderId) {
-    return translate(MESSAGES.relayErrorSenderUnknown)
+    return t`Cannot identify sender. Please try again later.`
   }
 
   const normalizedText = stripMentionTags(text).trim()
   if (normalizedText.length === 0) {
-    return translate(MESSAGES.relayErrorTextRequired)
+    return t`Please send a text message.`
   }
 
   return deps.handleIncomingText({

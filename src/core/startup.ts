@@ -1,6 +1,5 @@
 import process from 'node:process'
-import { MESSAGES } from '../i18n/messages'
-import { translate } from '../i18n/runtime'
+import { t } from '@lingui/core/macro'
 import { loadRelayConfig } from './config'
 import type { RelayConfig } from './config'
 
@@ -15,5 +14,5 @@ export function loadConfigOrExit(): RelayConfig {
 
 function formatStartupError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
-  return translate(MESSAGES.startupErrorPrefix, { message })
+  return t`Failed to start relay: ${message}`
 }

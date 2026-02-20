@@ -1,5 +1,5 @@
 {
   "eslint.useFlatConfig": true,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "cSpell.words": ["esbuild", "Feishu", "larksuiteoapi", "tsdown"]
+  "cSpell.words": ["esbuild", "Feishu", "larksuiteoapi", "lingui", "tsdown"]
 }

@@ -1,5 +1,5 @@
-import { MESSAGES } from '../i18n/messages'
-import { getCurrentLocale, translate } from '../i18n/runtime'
+import { t } from '@lingui/core/macro'
+import { getCurrentLocale } from '../i18n/runtime'
 import { getSessionKey } from '../session/store'
 import { getHelpText, parseCommand } from './commands'
 import type {
@@ -59,23 +59,18 @@ export async function handleIncomingText(
 
     if (parsed.type === 'status') {
       if (!currentSession) {
-        return translate(MESSAGES.handlerStatusNoSession)
+        return t`No active session. Send a normal message or use /new to create one.`
       }
 
       const title =
-        normalizeSessionTitle(currentSession.title) ??
-        translate(MESSAGES.handlerDefaultSessionTitle)
+        normalizeSessionTitle(currentSession.title) ?? t`New Session`
 
       return [
-        translate(MESSAGES.handlerStatusHeader),
-        translate(MESSAGES.handlerStatusThread, {
-          threadId: currentSession.threadId,
-        }),
-        translate(MESSAGES.handlerStatusTitle, { title }),
-        translate(MESSAGES.handlerStatusMode, { mode: currentSession.mode }),
-        translate(MESSAGES.handlerStatusModel, {
-          model: currentSession.model,
-        }),
+        t`Current session status:`,
+        t`thread: ${currentSession.threadId}`,
+        t`title: ${title}`,
+        t`mode: ${currentSession.mode}`,
+        t`model: ${currentSession.model}`,
       ].join('\n')
     }
 
@@ -83,17 +78,13 @@ export async function handleIncomingText(
       try {
         const result = await deps.listOpenProjects()
         if (result.roots.length === 0) {
-          return translate(MESSAGES.handlerProjectsNone)
+          return t`No working directories are currently open.`
         }
 
-        const lines = result.roots.map((root, index) =>
-          translate(MESSAGES.handlerProjectsItem, {
-            index: index + 1,
-            root,
-          }),
+        const lines = result.roots.map(
+          (root, index) => t`${index + 1}. ${root}`,
         )
-
-        return [translate(MESSAGES.handlerProjectsHeader), ...lines].join('\n')
+        return [t`Current working directories:`, ...lines].join('\n')
       } catch (error) {
         return formatProjectsError(error)
       }
@@ -101,12 +92,12 @@ export async function handleIncomingText(
 
     if (parsed.type === 'reset') {
       deps.clearSession(sessionKey)
-      return translate(MESSAGES.handlerResetDone)
+      return t`Current session has been cleared.`
     }
 
     if (parsed.type === 'mode') {
       if (!currentSession) {
-        return translate(MESSAGES.handlerModeNoSession)
+        return t`No active session. Send a normal message or use /new to create one first.`
       }
 
       deps.setSession(sessionKey, {
@@ -114,9 +105,7 @@ export async function handleIncomingText(
         mode: parsed.mode,
       })
 
-      return translate(MESSAGES.handlerModeSwitched, {
-        mode: parsed.mode,
-      })
+      return t`Switched to ${parsed.mode} mode.`
     }
 
     if (parsed.type === 'new') {
@@ -124,19 +113,11 @@ export async function handleIncomingText(
         const created = await deps.createThread(parsed.mode)
         deps.setSession(sessionKey, created)
         return [
-          translate(MESSAGES.handlerNewCreated),
-          translate(MESSAGES.handlerNewThread, {
-            threadId: created.threadId,
-          }),
-          translate(MESSAGES.handlerNewCwd, {
-            cwd: created.cwd,
-          }),
-          translate(MESSAGES.handlerNewMode, {
-            mode: created.mode,
-          }),
-          translate(MESSAGES.handlerNewModel, {
-            model: created.model,
-          }),
+          t`Created a new session.`,
+          t`thread: ${created.threadId}`,
+          t`cwd: ${created.cwd}`,
+          t`mode: ${created.mode}`,
+          t`model: ${created.model}`,
         ].join('\n')
       } catch (error) {
         return formatCodexError(error)
@@ -174,22 +155,18 @@ export async function handleIncomingText(
 
 function formatCodexError(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
-    return translate(MESSAGES.handlerErrorCodexDetailed, {
-      message: error.message,
-    })
+    return t`Codex execution failed: ${error.message}`
   }
 
-  return translate(MESSAGES.handlerErrorCodexGeneric)
+  return t`Codex execution failed. Please try again later.`
 }
 
 function formatProjectsError(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
-    return translate(MESSAGES.handlerErrorProjectsDetailed, {
-      message: error.message,
-    })
+    return t`Failed to read open projects: ${error.message}`
   }
 
-  return translate(MESSAGES.handlerErrorProjectsGeneric)
+  return t`Failed to read open projects. Please try again later.`
 }
 
 async function resolveSessionTitle(input: {
@@ -248,7 +225,7 @@ async function generateSessionTitleWithFallback(input: {
 function buildFallbackSessionTitle(prompt: string): string {
   const normalizedPrompt = normalizePrompt(prompt)
   if (normalizedPrompt.length === 0) {
-    return translate(MESSAGES.handlerDefaultSessionTitle)
+    return t`New Session`
   }
 
   return truncateTitle(normalizedPrompt)
@@ -271,17 +248,22 @@ function buildTitleGenerationPrompt(prompt: string): string {
   const locale = getCurrentLocale()
   const systemPrompt =
     locale === 'zh'
-      ? translate(MESSAGES.handlerTitleSystemPromptZh)
-      : translate(MESSAGES.handlerTitleSystemPromptEn)
-  const userMessage =
-    locale === 'zh'
-      ? translate(MESSAGES.handlerTitleUserMessageZh, {
-          prompt: normalizePrompt(prompt),
-        })
-      : translate(MESSAGES.handlerTitleUserMessageEn, {
-          prompt: normalizePrompt(prompt),
-        })
+      ? t`You are a session title generator.
+Generate a short Chinese title based on the user message.
+Strict requirements:
+1. Output title text only, with no explanation.
+2. Output a single line with no line breaks.
+3. Do not use quotes or title marks.
+4. Keep the title within 24 characters.`
+      : t`You are a session title generator.
+Generate a short English title based on the user message.
+Strict requirements:
+1. Output title text only, with no explanation.
+2. Output a single line with no line breaks.
+3. Do not use quotes.
+4. Keep the title within 24 characters.`
 
+  const userMessage = t`User message: ${normalizePrompt(prompt)}`
   return [systemPrompt, '', userMessage].join('\n')
 }
 
