@@ -187,7 +187,6 @@ describe('message routing', () => {
     const runTurn = vi.fn()
     const listOpenProjects = vi.fn().mockResolvedValue({
       roots: ['/Users/ding/i/relay', '/Users/ding/i/realfund.news'],
-      stateFilePath: '/Users/ding/.codex/.codex-global-state.json',
     })
 
     const reply = await buildReplyForMessageEvent(
@@ -213,7 +212,7 @@ describe('message routing', () => {
     expect(createThread).not.toHaveBeenCalled()
     expect(runTurn).not.toHaveBeenCalled()
     expect(listOpenProjects).toHaveBeenCalledOnce()
-    expect(reply).toContain('当前打开的项目:')
+    expect(reply).toContain('当前工作目录:')
     expect(reply).toContain('/Users/ding/i/relay')
   })
 })

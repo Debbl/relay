@@ -25,7 +25,6 @@ export type ParsedCommand =
 
 export interface OpenProjectsResult {
   roots: string[]
-  stateFilePath: string
 }
 
 export interface CodexTurnResult {

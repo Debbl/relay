@@ -61,18 +61,11 @@ export async function handleIncomingText(
       try {
         const result = await deps.listOpenProjects()
         if (result.roots.length === 0) {
-          return [
-            '当前没有记录到打开的项目。',
-            `state file: ${result.stateFilePath}`,
-          ].join('\n')
+          return '当前没有工作目录。'
         }
 
         const lines = result.roots.map((root, index) => `${index + 1}. ${root}`)
-        return [
-          '当前打开的项目:',
-          ...lines,
-          `state file: ${result.stateFilePath}`,
-        ].join('\n')
+        return ['当前工作目录:', ...lines].join('\n')
       } catch (error) {
         return formatProjectsError(error)
       }

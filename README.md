@@ -72,14 +72,14 @@ pnpm dev
 - `/new [default|plan]` create a new conversation (default mode if omitted).
 - `/mode <default|plan>` switch mode for current conversation.
 - `/status` show current thread info.
-- `/projects` list currently opened Codex workspace roots.
+- `/projects` show current fixed workspace root.
 - `/reset` clear current conversation.
 
 ## Notes
 
 - Sessions are in-memory only; restarting the process resets session mapping.
 - Codex runtime still stores its own threads under `~/.codex/sessions`.
-- Codex Desktop workspace state is stored in `~/.codex/.codex-global-state.json` (`active-workspace-roots`).
+- Relay fixes workspace root to the process startup directory (`process.cwd()`).
 - Ensure process user can read/write `~/.codex/sessions`.
 
 ## Quality checks

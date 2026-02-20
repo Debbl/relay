@@ -13,7 +13,7 @@ export const HELP_TEXT = [
   '/new [default|plan] - 新建会话',
   '/mode <default|plan> - 切换当前会话模式',
   '/status - 查看当前会话状态',
-  '/projects - 列出当前打开的项目',
+  '/projects - 查看当前工作目录',
   '/reset - 清空当前会话',
 ].join('\n')
 

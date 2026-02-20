@@ -323,8 +323,17 @@ async function openThread(
     return startThread(client, cwd)
   }
 
+  if (session.cwd !== cwd) {
+    return startThread(client, cwd)
+  }
+
   try {
-    return await resumeThread(client, session.threadId)
+    const resumed = await resumeThread(client, session.threadId)
+    if (resumed.cwd !== cwd) {
+      return startThread(client, cwd)
+    }
+
+    return resumed
   } catch (error) {
     if (isThreadMissingError(error)) {
       return startThread(client, cwd)
@@ -339,7 +348,7 @@ async function startThread(
 ): Promise<OpenThreadResult> {
   const raw = await client.request('thread/start', {
     cwd,
-    approvalPolicy: 'never',
+    approvalPolicy: 'on-request',
     sandbox: 'workspace-write',
     experimentalRawEvents: false,
   })
@@ -472,19 +481,19 @@ function isRpcServerRequest(
 
 function getServerRequestResult(method: string): unknown | null {
   if (method === 'item/commandExecution/requestApproval') {
-    return { decision: 'decline' }
+    return { decision: 'approve' }
   }
 
   if (method === 'item/fileChange/requestApproval') {
-    return { decision: 'decline' }
+    return { decision: 'approve' }
   }
 
   if (method === 'execCommandApproval') {
-    return { decision: 'denied' }
+    return { decision: 'approved' }
   }
 
   if (method === 'applyPatchApproval') {
-    return { decision: 'denied' }
+    return { decision: 'approved' }
   }
 
   if (method === 'item/tool/requestUserInput') {
