@@ -1,3 +1,5 @@
+import { MESSAGES } from '../i18n/messages'
+import { translate } from '../i18n/runtime'
 import {
   isMessageFromBot,
   resolveSenderId,
@@ -39,12 +41,12 @@ export async function buildReplyForMessageEvent(
   }
 
   if (event.message.message_type !== 'text') {
-    return '解析消息失败，请发送文本消息。'
+    return translate(MESSAGES.relayErrorParseMessage)
   }
 
   const text = parseTextContent(event.message.content)
   if (!text) {
-    return '解析消息失败，请发送文本消息。'
+    return translate(MESSAGES.relayErrorParseMessage)
   }
 
   if (
@@ -56,12 +58,12 @@ export async function buildReplyForMessageEvent(
 
   const senderId = resolveSenderId(event.sender.sender_id)
   if (!senderId) {
-    return '无法识别发送者，请稍后重试。'
+    return translate(MESSAGES.relayErrorSenderUnknown)
   }
 
   const normalizedText = stripMentionTags(text).trim()
   if (normalizedText.length === 0) {
-    return '请发送文本消息。'
+    return translate(MESSAGES.relayErrorTextRequired)
   }
 
   return deps.handleIncomingText({

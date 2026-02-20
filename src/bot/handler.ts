@@ -1,5 +1,7 @@
+import { MESSAGES } from '../i18n/messages'
+import { getCurrentLocale, translate } from '../i18n/runtime'
 import { getSessionKey } from '../session/store'
-import { HELP_TEXT, parseCommand } from './commands'
+import { getHelpText, parseCommand } from './commands'
 import type {
   BotSession,
   ChatMode,
@@ -8,18 +10,7 @@ import type {
   OpenProjectsResult,
 } from '../core/types'
 
-const DEFAULT_SESSION_TITLE = '新会话'
 const MAX_SESSION_TITLE_LENGTH = 24
-
-const TITLE_GENERATION_SYSTEM_PROMPT = [
-  '你是一个会话标题生成器。',
-  '请根据用户消息生成一个简短中文标题。',
-  '严格要求：',
-  '1. 仅输出标题文本，不要解释。',
-  '2. 单行输出，不要换行。',
-  '3. 不要使用引号或书名号。',
-  '4. 标题长度不超过 24 个字符。',
-].join('\n')
 
 const WRAPPING_QUOTE_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['"', '"'],
@@ -63,21 +54,28 @@ export async function handleIncomingText(
     }
 
     if (parsed.type === 'help') {
-      return HELP_TEXT
+      return getHelpText()
     }
 
     if (parsed.type === 'status') {
       if (!currentSession) {
-        return '当前没有会话。发送普通消息或使用 /new 创建会话。'
+        return translate(MESSAGES.handlerStatusNoSession)
       }
 
-      const title = normalizeSessionTitle(currentSession.title)
+      const title =
+        normalizeSessionTitle(currentSession.title) ??
+        translate(MESSAGES.handlerDefaultSessionTitle)
+
       return [
-        '当前会话状态:',
-        `thread: ${currentSession.threadId}`,
-        `title: ${title ?? DEFAULT_SESSION_TITLE}`,
-        `mode: ${currentSession.mode}`,
-        `model: ${currentSession.model}`,
+        translate(MESSAGES.handlerStatusHeader),
+        translate(MESSAGES.handlerStatusThread, {
+          threadId: currentSession.threadId,
+        }),
+        translate(MESSAGES.handlerStatusTitle, { title }),
+        translate(MESSAGES.handlerStatusMode, { mode: currentSession.mode }),
+        translate(MESSAGES.handlerStatusModel, {
+          model: currentSession.model,
+        }),
       ].join('\n')
     }
 
@@ -85,11 +83,17 @@ export async function handleIncomingText(
       try {
         const result = await deps.listOpenProjects()
         if (result.roots.length === 0) {
-          return '当前没有工作目录。'
+          return translate(MESSAGES.handlerProjectsNone)
         }
 
-        const lines = result.roots.map((root, index) => `${index + 1}. ${root}`)
-        return ['当前工作目录:', ...lines].join('\n')
+        const lines = result.roots.map((root, index) =>
+          translate(MESSAGES.handlerProjectsItem, {
+            index: index + 1,
+            root,
+          }),
+        )
+
+        return [translate(MESSAGES.handlerProjectsHeader), ...lines].join('\n')
       } catch (error) {
         return formatProjectsError(error)
       }
@@ -97,19 +101,22 @@ export async function handleIncomingText(
 
     if (parsed.type === 'reset') {
       deps.clearSession(sessionKey)
-      return '已清空当前会话。'
+      return translate(MESSAGES.handlerResetDone)
     }
 
     if (parsed.type === 'mode') {
       if (!currentSession) {
-        return '当前没有会话，先发送普通消息或使用 /new 创建会话。'
+        return translate(MESSAGES.handlerModeNoSession)
       }
 
       deps.setSession(sessionKey, {
         ...currentSession,
         mode: parsed.mode,
       })
-      return `已切换为 ${parsed.mode} 模式。`
+
+      return translate(MESSAGES.handlerModeSwitched, {
+        mode: parsed.mode,
+      })
     }
 
     if (parsed.type === 'new') {
@@ -117,11 +124,19 @@ export async function handleIncomingText(
         const created = await deps.createThread(parsed.mode)
         deps.setSession(sessionKey, created)
         return [
-          '已创建新会话。',
-          `thread: ${created.threadId}`,
-          `cwd: ${created.cwd}`,
-          `mode: ${created.mode}`,
-          `model: ${created.model}`,
+          translate(MESSAGES.handlerNewCreated),
+          translate(MESSAGES.handlerNewThread, {
+            threadId: created.threadId,
+          }),
+          translate(MESSAGES.handlerNewCwd, {
+            cwd: created.cwd,
+          }),
+          translate(MESSAGES.handlerNewMode, {
+            mode: created.mode,
+          }),
+          translate(MESSAGES.handlerNewModel, {
+            model: created.model,
+          }),
         ].join('\n')
       } catch (error) {
         return formatCodexError(error)
@@ -159,18 +174,22 @@ export async function handleIncomingText(
 
 function formatCodexError(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
-    return `Codex 执行失败: ${error.message}`
+    return translate(MESSAGES.handlerErrorCodexDetailed, {
+      message: error.message,
+    })
   }
 
-  return 'Codex 执行失败，请稍后重试。'
+  return translate(MESSAGES.handlerErrorCodexGeneric)
 }
 
 function formatProjectsError(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
-    return `读取打开项目失败: ${error.message}`
+    return translate(MESSAGES.handlerErrorProjectsDetailed, {
+      message: error.message,
+    })
   }
 
-  return '读取打开项目失败，请稍后重试。'
+  return translate(MESSAGES.handlerErrorProjectsGeneric)
 }
 
 async function resolveSessionTitle(input: {
@@ -229,7 +248,7 @@ async function generateSessionTitleWithFallback(input: {
 function buildFallbackSessionTitle(prompt: string): string {
   const normalizedPrompt = normalizePrompt(prompt)
   if (normalizedPrompt.length === 0) {
-    return DEFAULT_SESSION_TITLE
+    return translate(MESSAGES.handlerDefaultSessionTitle)
   }
 
   return truncateTitle(normalizedPrompt)
@@ -249,11 +268,21 @@ function normalizeSessionTitle(title: string | undefined): string | null {
 }
 
 function buildTitleGenerationPrompt(prompt: string): string {
-  return [
-    TITLE_GENERATION_SYSTEM_PROMPT,
-    '',
-    `用户消息: ${normalizePrompt(prompt)}`,
-  ].join('\n')
+  const locale = getCurrentLocale()
+  const systemPrompt =
+    locale === 'zh'
+      ? translate(MESSAGES.handlerTitleSystemPromptZh)
+      : translate(MESSAGES.handlerTitleSystemPromptEn)
+  const userMessage =
+    locale === 'zh'
+      ? translate(MESSAGES.handlerTitleUserMessageZh, {
+          prompt: normalizePrompt(prompt),
+        })
+      : translate(MESSAGES.handlerTitleUserMessageEn, {
+          prompt: normalizePrompt(prompt),
+        })
+
+  return [systemPrompt, '', userMessage].join('\n')
 }
 
 function sanitizeGeneratedTitle(rawTitle: string): string | null {

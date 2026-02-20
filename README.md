@@ -35,7 +35,7 @@ Config fields:
     "BOT_OPEN_ID": "ou_xxx",
     "CODEX_BIN": "codex",
     "CODEX_TIMEOUT_MS": null,
-    "REPLY_PREFIX": "【Relay】"
+    "LOCALE": "en"
   }
 }
 ```
@@ -45,7 +45,7 @@ Config fields:
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
   - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
-  - `REPLY_PREFIX` (default: `【Relay】`; prepended to every Feishu reply. If session title exists, it is appended; otherwise thread short ID is appended).
+  - `LOCALE` (supported values: `en`, `zh`; default: `en`; unsupported value falls back to `en` with a warning).
 
 ## Run
 
@@ -93,6 +93,8 @@ pnpm dev
 ## Quality checks
 
 ```bash
+pnpm i18n:extract
+pnpm i18n:compile
 pnpm lint
 pnpm typecheck
 pnpm test

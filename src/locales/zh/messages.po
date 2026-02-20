@@ -1,0 +1,299 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-20 16:11+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: zh\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:83
+msgid "handler.projects.item"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:5
+msgid "commands.help.line.help"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:30
+msgid "commands.error.helpNoArgs"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:10
+msgid "commands.help.line.mode"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:44
+msgid "commands.error.modeNeedsArg"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:6
+msgid "commands.help.line.new"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:34
+msgid "commands.error.newArgCount"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:18
+msgid "commands.help.line.projects"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:52
+msgid "commands.error.projectsNoArgs"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:22
+msgid "commands.help.line.reset"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:56
+msgid "commands.error.resetNoArgs"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:14
+msgid "commands.help.line.status"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:48
+msgid "commands.error.statusNoArgs"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:4
+msgid "commands.help.available"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:132
+msgid "relay.error.senderUnknown"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:99
+msgid "handler.error.codexDetailed"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:103
+msgid "handler.error.codexGeneric"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:26
+msgid "commands.error.empty"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:94
+msgid "handler.new.created"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:84
+msgid "handler.reset.done"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:70
+msgid "handler.status.header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:79
+msgid "handler.projects.header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:141
+msgid "index.busyMessage"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:96
+msgid "handler.new.cwd"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:128
+msgid "relay.error.parseMessage"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:145
+msgid "index.error.processMessage"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:107
+msgid "handler.error.projectsDetailed"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:111
+msgid "handler.error.projectsGeneric"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:157
+msgid "config.error.readFailed"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:150
+msgid "startup.error.prefix"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:161
+msgid "config.error.invalidJson"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:39
+msgid "commands.error.invalidMode"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:169
+msgid "config.error.envNotObject"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:165
+msgid "config.error.rootNotObject"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:173
+msgid "config.error.requiredString"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:178
+msgid "config.error.fieldMustString"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:182
+msgid "config.error.timeoutPositiveInteger"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:186
+msgid "config.warn.invalidLocale"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:73
+msgid "handler.status.mode"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:97
+msgid "handler.new.mode"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:74
+msgid "handler.status.model"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:98
+msgid "handler.new.model"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:65
+msgid "handler.defaultSessionTitle"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:88
+msgid "handler.mode.noSession"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:66
+msgid "handler.status.noSession"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:75
+msgid "handler.projects.none"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:136
+msgid "relay.error.textRequired"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:152
+msgid "config.error.missing"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:93
+msgid "handler.mode.switched"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:71
+msgid "handler.status.thread"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:95
+msgid "handler.new.thread"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:72
+msgid "handler.status.title"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:60
+msgid "commands.error.unknownCommand"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:125
+msgid "handler.title.userMessage.zh"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:126
+msgid "handler.title.userMessage.en"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:115
+msgid "handler.title.systemPrompt.zh"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:120
+msgid "handler.title.systemPrompt.en"
+msgstr ""

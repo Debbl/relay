@@ -1,13 +1,19 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRelayConfig } from '../src/core/config'
+import { initializeI18n } from '../src/i18n/runtime'
 
 const tempHomes: string[] = []
 
 describe('loadRelayConfig', () => {
+  beforeEach(() => {
+    initializeI18n('en')
+  })
+
   afterEach(() => {
+    vi.restoreAllMocks()
     for (const home of tempHomes) {
       fs.rmSync(home, { recursive: true, force: true })
     }
@@ -37,6 +43,7 @@ describe('loadRelayConfig', () => {
         BOT_OPEN_ID: 'ou_xxx',
         CODEX_BIN: 'codex',
         CODEX_TIMEOUT_MS: null,
+        LOCALE: 'en',
       },
     })
   })
@@ -64,6 +71,7 @@ describe('loadRelayConfig', () => {
       codexBin: 'codex',
       codexTimeoutMs: undefined,
       workspaceCwd: '/workspace/relay',
+      locale: 'en',
     })
   })
 
@@ -76,6 +84,7 @@ describe('loadRelayConfig', () => {
         APP_SECRET: 'secret_env_123',
         BOT_OPEN_ID: 'ou_env_bot_123',
         CODEX_BIN: '/opt/bin/codex',
+        LOCALE: 'zh',
       },
     })
 
@@ -94,6 +103,7 @@ describe('loadRelayConfig', () => {
       codexBin: '/opt/bin/codex',
       codexTimeoutMs: undefined,
       workspaceCwd: '/workspace/relay',
+      locale: 'zh',
     })
   })
 
@@ -106,6 +116,7 @@ describe('loadRelayConfig', () => {
       BOT_OPEN_ID: 'ou_bot_123',
       CODEX_BIN: '/usr/local/bin/codex',
       CODEX_TIMEOUT_MS: 240000,
+      LOCALE: 'en',
     })
 
     const config = loadRelayConfig({
@@ -123,7 +134,29 @@ describe('loadRelayConfig', () => {
       codexBin: '/usr/local/bin/codex',
       codexTimeoutMs: 240000,
       workspaceCwd: '/workspace/relay',
+      locale: 'en',
     })
+  })
+
+  it('falls back to en and warns when LOCALE is unsupported', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      BASE_DOMAIN: 'https://open.feishu.cn',
+      APP_ID: 'app_777',
+      APP_SECRET: 'secret_777',
+      LOCALE: 'fr',
+    })
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config.locale).toBe('en')
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Invalid relay config: LOCALE "fr" is not supported. Falling back to en.',
+    )
   })
 
   it('treats null timeout as no timeout', () => {

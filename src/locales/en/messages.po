@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-20 16:11+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:83
+msgid "handler.projects.item"
+msgstr "{index}. {root}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:5
+msgid "commands.help.line.help"
+msgstr "/help - Show help"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:30
+msgid "commands.error.helpNoArgs"
+msgstr ""
+"/help does not accept arguments.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:10
+msgid "commands.help.line.mode"
+msgstr "/mode <default|plan> - Switch current session mode"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:44
+msgid "commands.error.modeNeedsArg"
+msgstr ""
+"/mode requires one argument: default or plan.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:6
+msgid "commands.help.line.new"
+msgstr "/new [default|plan] - Create a new session"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:34
+msgid "commands.error.newArgCount"
+msgstr ""
+"/new accepts at most one optional argument: default or plan.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:18
+msgid "commands.help.line.projects"
+msgstr "/projects - Show current working directories"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:52
+msgid "commands.error.projectsNoArgs"
+msgstr ""
+"/projects does not accept arguments.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:22
+msgid "commands.help.line.reset"
+msgstr "/reset - Clear current session"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:56
+msgid "commands.error.resetNoArgs"
+msgstr ""
+"/reset does not accept arguments.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:14
+msgid "commands.help.line.status"
+msgstr "/status - Show current session status"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:48
+msgid "commands.error.statusNoArgs"
+msgstr ""
+"/status does not accept arguments.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:4
+msgid "commands.help.available"
+msgstr "Available commands:"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:132
+msgid "relay.error.senderUnknown"
+msgstr "Cannot identify sender. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:99
+msgid "handler.error.codexDetailed"
+msgstr "Codex execution failed: {message}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:103
+msgid "handler.error.codexGeneric"
+msgstr "Codex execution failed. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:26
+msgid "commands.error.empty"
+msgstr ""
+"Command cannot be empty.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:94
+msgid "handler.new.created"
+msgstr "Created a new session."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:84
+msgid "handler.reset.done"
+msgstr "Current session has been cleared."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:70
+msgid "handler.status.header"
+msgstr "Current session status:"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:79
+msgid "handler.projects.header"
+msgstr "Current working directories:"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:141
+msgid "index.busyMessage"
+msgstr "Currently busy. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:96
+msgid "handler.new.cwd"
+msgstr "cwd: {cwd}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:128
+msgid "relay.error.parseMessage"
+msgstr "Failed to parse message. Please send a text message."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:145
+msgid "index.error.processMessage"
+msgstr "Failed to process message. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:107
+msgid "handler.error.projectsDetailed"
+msgstr "Failed to read open projects: {message}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:111
+msgid "handler.error.projectsGeneric"
+msgstr "Failed to read open projects. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:157
+msgid "config.error.readFailed"
+msgstr "Failed to read relay config at {configPath}: {error}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:150
+msgid "startup.error.prefix"
+msgstr "Failed to start relay: {message}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:161
+msgid "config.error.invalidJson"
+msgstr "Invalid JSON in relay config at {configPath}: {error}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:39
+msgid "commands.error.invalidMode"
+msgstr ""
+"Invalid mode \"{modeToken}\", only default or plan are supported.\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:169
+msgid "config.error.envNotObject"
+msgstr "Invalid relay config at {configPath}: env must be a JSON object."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:165
+msgid "config.error.rootNotObject"
+msgstr "Invalid relay config at {configPath}: root must be a JSON object."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:173
+msgid "config.error.requiredString"
+msgstr "Invalid relay config: {field} is required and must be a non-empty string."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:178
+msgid "config.error.fieldMustString"
+msgstr "Invalid relay config: {field} must be a string."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:182
+msgid "config.error.timeoutPositiveInteger"
+msgstr "Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:186
+msgid "config.warn.invalidLocale"
+msgstr "Invalid relay config: LOCALE \"{locale}\" is not supported. Falling back to en."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:73
+msgid "handler.status.mode"
+msgstr "mode: {mode}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:97
+msgid "handler.new.mode"
+msgstr "mode: {mode}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:74
+msgid "handler.status.model"
+msgstr "model: {model}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:98
+msgid "handler.new.model"
+msgstr "model: {model}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:65
+msgid "handler.defaultSessionTitle"
+msgstr "New Session"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:88
+msgid "handler.mode.noSession"
+msgstr "No active session. Send a normal message or use /new to create one first."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:66
+msgid "handler.status.noSession"
+msgstr "No active session. Send a normal message or use /new to create one."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:75
+msgid "handler.projects.none"
+msgstr "No working directories are currently open."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:136
+msgid "relay.error.textRequired"
+msgstr "Please send a text message."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:152
+msgid "config.error.missing"
+msgstr "Relay config is missing. Template created at {configPath}. Please edit this file and restart."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:93
+msgid "handler.mode.switched"
+msgstr "Switched to {mode} mode."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:71
+msgid "handler.status.thread"
+msgstr "thread: {threadId}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:95
+msgid "handler.new.thread"
+msgstr "thread: {threadId}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:72
+msgid "handler.status.title"
+msgstr "title: {title}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:60
+msgid "commands.error.unknownCommand"
+msgstr ""
+"Unknown command \"{command}\".\n"
+"\n"
+"{helpText}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:125
+msgid "handler.title.userMessage.zh"
+msgstr "User message: {prompt}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:126
+msgid "handler.title.userMessage.en"
+msgstr "User message: {prompt}"
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:115
+msgid "handler.title.systemPrompt.zh"
+msgstr ""
+"You are a session title generator.\n"
+"Generate a short Chinese title based on the user message.\n"
+"Strict requirements:\n"
+"1. Output title text only, with no explanation.\n"
+"2. Output a single line with no line breaks.\n"
+"3. Do not use quotes or title marks.\n"
+"4. Keep the title within 24 characters."
+
+#. js-lingui-explicit-id
+#: src/i18n/source-messages.ts:120
+msgid "handler.title.systemPrompt.en"
+msgstr ""
+"You are a session title generator.\n"
+"Generate a short English title based on the user message.\n"
+"Strict requirements:\n"
+"1. Output title text only, with no explanation.\n"
+"2. Output a single line with no line breaks.\n"
+"3. Do not use quotes.\n"
+"4. Keep the title within 24 characters."

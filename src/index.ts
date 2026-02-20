@@ -6,6 +6,8 @@ import { createCodexThread, runCodexTurn } from './codex/app-server'
 import { listOpenProjects } from './codex/state'
 import { loadConfigOrExit } from './core/startup'
 import { sendReply } from './feishu/reply'
+import { MESSAGES } from './i18n/messages'
+import { initializeI18n, translate } from './i18n/runtime'
 import {
   clearSession,
   getSession,
@@ -15,7 +17,8 @@ import {
 import type { FeishuReceiveMessageEvent } from './feishu/reply'
 
 const relayConfig = loadConfigOrExit()
-const BUSY_MESSAGE = '当前正忙，请稍后再试。'
+initializeI18n(relayConfig.locale)
+const BUSY_MESSAGE = translate(MESSAGES.indexBusyMessage)
 
 const client = new Lark.Client(relayConfig.baseConfig)
 const wsClient = new Lark.WSClient(relayConfig.baseConfig)
@@ -59,7 +62,11 @@ async function processIncomingEvent(
   } catch (error) {
     console.error('failed to handle Feishu message', error)
     try {
-      await sendReply(client, data, '处理消息失败，请稍后重试。')
+      await sendReply(
+        client,
+        data,
+        translate(MESSAGES.indexErrorProcessMessage),
+      )
     } catch (replyError) {
       console.error('failed to send failure message', replyError)
     }

@@ -35,7 +35,7 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
     "BOT_OPEN_ID": "ou_xxx",
     "CODEX_BIN": "codex",
     "CODEX_TIMEOUT_MS": null,
-    "REPLY_PREFIX": "【Relay】"
+    "LOCALE": "en"
   }
 }
 ```
@@ -45,7 +45,7 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
   - `BOT_OPEN_ID`（为空或缺失表示禁用）。
   - `CODEX_BIN`（默认：`codex`）。
   - `CODEX_TIMEOUT_MS`（默认：不超时；如果设置，必须为正整数）。
-  - `REPLY_PREFIX`（默认：`【Relay】`；会加在每条飞书回复前面。有会话标题时附加标题，否则附加 thread short ID）。
+  - `LOCALE`（支持：`en`、`zh`；默认：`en`；如果值不支持会告警并回退到 `en`）。
 
 ## 运行
 
@@ -93,6 +93,8 @@ pnpm dev
 ## 质量检查
 
 ```bash
+pnpm i18n:extract
+pnpm i18n:compile
 pnpm lint
 pnpm typecheck
 pnpm test

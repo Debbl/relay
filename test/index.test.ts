@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handleIncomingText } from '../src/bot/handler'
 import { buildReplyForMessageEvent } from '../src/bot/relay'
+import { initializeI18n } from '../src/i18n/runtime'
 import {
   clearSession,
   getSession,
@@ -13,6 +14,7 @@ import type { BotSession } from '../src/core/types'
 
 describe('message routing', () => {
   beforeEach(() => {
+    initializeI18n('en')
     resetSessionStore()
   })
 
@@ -226,7 +228,7 @@ describe('message routing', () => {
       },
     })
     expect(runTurn).toHaveBeenNthCalledWith(2, {
-      prompt: expect.stringContaining('用户消息: fix login bug'),
+      prompt: expect.stringContaining('User message: fix login bug'),
       mode: 'default',
       session: null,
     })
@@ -490,6 +492,39 @@ describe('message routing', () => {
     expect(createThread).not.toHaveBeenCalled()
     expect(runTurn).not.toHaveBeenCalled()
     expect(listOpenProjects).toHaveBeenCalledOnce()
+    expect(reply).toContain('Current working directories:')
+    expect(reply).toContain('/Users/ding/i/relay')
+  })
+
+  it('returns Chinese copy when locale is zh', async () => {
+    initializeI18n('zh')
+
+    const createThread = vi.fn()
+    const runTurn = vi.fn()
+    const listOpenProjects = vi.fn().mockResolvedValue({
+      roots: ['/Users/ding/i/relay'],
+    })
+
+    const reply = await buildReplyForMessageEvent(
+      createEvent({
+        chatType: 'p2p',
+        text: '/projects',
+      }),
+      {
+        botOpenId: 'bot_open_id',
+        handleIncomingText: (input) =>
+          handleIncomingText(input, {
+            createThread,
+            runTurn,
+            getSession,
+            setSession,
+            clearSession,
+            withSessionLock,
+            listOpenProjects,
+          }),
+      },
+    )
+
     expect(reply).toContain('当前工作目录:')
     expect(reply).toContain('/Users/ding/i/relay')
   })

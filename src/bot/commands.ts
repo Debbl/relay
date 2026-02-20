@@ -1,3 +1,5 @@
+import { MESSAGES } from '../i18n/messages'
+import { translate } from '../i18n/runtime'
 import type { ChatMode, ParsedCommand } from '../core/types'
 
 const COMMAND_HELP = '/help'
@@ -7,22 +9,26 @@ const COMMAND_STATUS = '/status'
 const COMMAND_PROJECTS = '/projects'
 const COMMAND_RESET = '/reset'
 
-export const HELP_TEXT = [
-  '可用命令:',
-  '/help - 查看帮助',
-  '/new [default|plan] - 新建会话',
-  '/mode <default|plan> - 切换当前会话模式',
-  '/status - 查看当前会话状态',
-  '/projects - 查看当前工作目录',
-  '/reset - 清空当前会话',
-].join('\n')
+export function getHelpText(): string {
+  return [
+    translate(MESSAGES.commandsHelpAvailable),
+    translate(MESSAGES.commandsHelpLineHelp),
+    translate(MESSAGES.commandsHelpLineNew),
+    translate(MESSAGES.commandsHelpLineMode),
+    translate(MESSAGES.commandsHelpLineStatus),
+    translate(MESSAGES.commandsHelpLineProjects),
+    translate(MESSAGES.commandsHelpLineReset),
+  ].join('\n')
+}
 
 export function parseCommand(input: string): ParsedCommand {
   const normalized = input.trim()
+  const helpText = getHelpText()
+
   if (normalized.length === 0) {
     return {
       type: 'invalid',
-      message: `命令不能为空。\n\n${HELP_TEXT}`,
+      message: translate(MESSAGES.commandsErrorEmpty, { helpText }),
     }
   }
 
@@ -37,7 +43,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/help 不接受参数。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorHelpNoArgs, { helpText }),
       }
     }
 
@@ -48,7 +54,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 2) {
       return {
         type: 'invalid',
-        message: `/new 只接受一个可选参数: default 或 plan。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorNewArgCount, { helpText }),
       }
     }
 
@@ -61,7 +67,10 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: `无效模式 "${modeToken}"，仅支持 default 或 plan。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorInvalidMode, {
+          modeToken,
+          helpText,
+        }),
       }
     }
 
@@ -73,7 +82,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (!modeToken || parts.length > 2) {
       return {
         type: 'invalid',
-        message: `/mode 需要一个参数: default 或 plan。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorModeNeedsArg, { helpText }),
       }
     }
 
@@ -81,7 +90,10 @@ export function parseCommand(input: string): ParsedCommand {
     if (!mode) {
       return {
         type: 'invalid',
-        message: `无效模式 "${modeToken}"，仅支持 default 或 plan。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorInvalidMode, {
+          modeToken,
+          helpText,
+        }),
       }
     }
 
@@ -92,7 +104,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/status 不接受参数。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorStatusNoArgs, { helpText }),
       }
     }
 
@@ -103,7 +115,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/projects 不接受参数。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorProjectsNoArgs, { helpText }),
       }
     }
 
@@ -114,7 +126,7 @@ export function parseCommand(input: string): ParsedCommand {
     if (parts.length > 1) {
       return {
         type: 'invalid',
-        message: `/reset 不接受参数。\n\n${HELP_TEXT}`,
+        message: translate(MESSAGES.commandsErrorResetNoArgs, { helpText }),
       }
     }
 
@@ -123,7 +135,10 @@ export function parseCommand(input: string): ParsedCommand {
 
   return {
     type: 'invalid',
-    message: `未知命令 "${command ?? normalized}"。\n\n${HELP_TEXT}`,
+    message: translate(MESSAGES.commandsErrorUnknownCommand, {
+      command: command ?? normalized,
+      helpText,
+    }),
   }
 }
 
