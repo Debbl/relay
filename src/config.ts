@@ -4,7 +4,6 @@ import path from 'node:path'
 import process from 'node:process'
 
 const DEFAULT_CODEX_BIN = 'codex'
-const DEFAULT_CODEX_TIMEOUT_MS = 180_000
 
 const TEMPLATE_CONFIG: Required<RelayConfigFile> = {
   BASE_DOMAIN: 'https://open.feishu.cn',
@@ -12,7 +11,7 @@ const TEMPLATE_CONFIG: Required<RelayConfigFile> = {
   APP_SECRET: 'your_app_secret',
   BOT_OPEN_ID: 'ou_xxx',
   CODEX_BIN: DEFAULT_CODEX_BIN,
-  CODEX_TIMEOUT_MS: DEFAULT_CODEX_TIMEOUT_MS,
+  CODEX_TIMEOUT_MS: null,
 }
 
 export interface RelayConfigFile {
@@ -21,7 +20,7 @@ export interface RelayConfigFile {
   APP_SECRET?: string
   BOT_OPEN_ID?: string
   CODEX_BIN?: string
-  CODEX_TIMEOUT_MS?: number | string
+  CODEX_TIMEOUT_MS?: number | string | null
 }
 
 export interface RelayConfig {
@@ -32,7 +31,7 @@ export interface RelayConfig {
   }
   botOpenId?: string
   codexBin: string
-  codexTimeoutMs: number
+  codexTimeoutMs?: number
   workspaceCwd: string
 }
 
@@ -147,9 +146,9 @@ function readOptionalString(value: unknown, field: string): string | undefined {
   return normalized
 }
 
-function readTimeoutMs(value: unknown): number {
-  if (value === undefined) {
-    return DEFAULT_CODEX_TIMEOUT_MS
+function readTimeoutMs(value: unknown): number | undefined {
+  if (value === undefined || value === null) {
+    return undefined
   }
 
   if (typeof value === 'number') {
@@ -163,6 +162,9 @@ function readTimeoutMs(value: unknown): number {
 
   if (typeof value === 'string') {
     const trimmed = value.trim()
+    if (trimmed.length === 0) {
+      return undefined
+    }
     if (!/^[1-9]\d*$/.test(trimmed)) {
       throw new Error(
         'Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer.',

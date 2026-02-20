@@ -31,7 +31,7 @@ Config fields:
   "APP_SECRET": "your_app_secret",
   "BOT_OPEN_ID": "ou_xxx",
   "CODEX_BIN": "codex",
-  "CODEX_TIMEOUT_MS": 180000
+  "CODEX_TIMEOUT_MS": null
 }
 ```
 
@@ -39,7 +39,7 @@ Config fields:
 - Optional fields:
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
-  - `CODEX_TIMEOUT_MS` (default: `180000`, positive integer only).
+  - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
 
 ## Run
 

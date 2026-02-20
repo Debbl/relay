@@ -35,7 +35,7 @@ describe('loadRelayConfig', () => {
       APP_SECRET: 'your_app_secret',
       BOT_OPEN_ID: 'ou_xxx',
       CODEX_BIN: 'codex',
-      CODEX_TIMEOUT_MS: 180000,
+      CODEX_TIMEOUT_MS: null,
     })
   })
 
@@ -60,7 +60,7 @@ describe('loadRelayConfig', () => {
       },
       botOpenId: undefined,
       codexBin: 'codex',
-      codexTimeoutMs: 180000,
+      codexTimeoutMs: undefined,
       workspaceCwd: '/workspace/relay',
     })
   })
@@ -92,6 +92,23 @@ describe('loadRelayConfig', () => {
       codexTimeoutMs: 240000,
       workspaceCwd: '/workspace/relay',
     })
+  })
+
+  it('treats null timeout as no timeout', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      BASE_DOMAIN: 'https://open.feishu.cn',
+      APP_ID: 'app_321',
+      APP_SECRET: 'secret_321',
+      CODEX_TIMEOUT_MS: null,
+    })
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config.codexTimeoutMs).toBeUndefined()
   })
 
   it.each([-1, 0, 'abc'])(
