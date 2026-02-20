@@ -19,10 +19,13 @@ const TEMPLATE_ENV_CONFIG: Required<RelayConfigEnv> = {
   BOT_OPEN_ID: 'ou_xxx',
   CODEX_BIN: DEFAULT_CODEX_BIN,
   CODEX_TIMEOUT_MS: null,
-  LOCALE: getDefaultLocale(),
 }
 
-const TEMPLATE_CONFIG: { env: Required<RelayConfigEnv> } = {
+const TEMPLATE_CONFIG: {
+  locale: AppLocale
+  env: Required<RelayConfigEnv>
+} = {
+  locale: getDefaultLocale(),
   env: TEMPLATE_ENV_CONFIG,
 }
 
@@ -33,11 +36,17 @@ export interface RelayConfigEnv {
   BOT_OPEN_ID?: string
   CODEX_BIN?: string
   CODEX_TIMEOUT_MS?: number | string | null
-  LOCALE?: string
 }
 
 interface RelayConfigFile extends RelayConfigEnv {
+  locale?: string
+  LOCALE?: string
   env?: RelayConfigEnv
+}
+
+interface ParsedRelayConfig {
+  env: RelayConfigEnv
+  localeValue: unknown
 }
 
 export interface RelayConfig {
@@ -74,12 +83,12 @@ export function loadRelayConfig(
   }
 
   const parsed = parseConfigFile(configPath)
-  const locale = readLocale(parsed.LOCALE)
+  const locale = readLocale(parsed.localeValue)
   initializeI18n(locale)
 
-  const domain = readRequiredString(parsed.BASE_DOMAIN, 'BASE_DOMAIN')
-  const appId = readRequiredString(parsed.APP_ID, 'APP_ID')
-  const appSecret = readRequiredString(parsed.APP_SECRET, 'APP_SECRET')
+  const domain = readRequiredString(parsed.env.BASE_DOMAIN, 'BASE_DOMAIN')
+  const appId = readRequiredString(parsed.env.APP_ID, 'APP_ID')
+  const appSecret = readRequiredString(parsed.env.APP_SECRET, 'APP_SECRET')
 
   return {
     baseConfig: {
@@ -87,10 +96,11 @@ export function loadRelayConfig(
       appSecret,
       domain,
     },
-    botOpenId: readOptionalString(parsed.BOT_OPEN_ID, 'BOT_OPEN_ID'),
+    botOpenId: readOptionalString(parsed.env.BOT_OPEN_ID, 'BOT_OPEN_ID'),
     codexBin:
-      readOptionalString(parsed.CODEX_BIN, 'CODEX_BIN') ?? DEFAULT_CODEX_BIN,
-    codexTimeoutMs: readTimeoutMs(parsed.CODEX_TIMEOUT_MS),
+      readOptionalString(parsed.env.CODEX_BIN, 'CODEX_BIN') ??
+      DEFAULT_CODEX_BIN,
+    codexTimeoutMs: readTimeoutMs(parsed.env.CODEX_TIMEOUT_MS),
     workspaceCwd,
     locale,
   }
@@ -112,7 +122,7 @@ function ensureConfigTemplate(configDir: string, configPath: string): void {
   )
 }
 
-function parseConfigFile(configPath: string): RelayConfigEnv {
+function parseConfigFile(configPath: string): ParsedRelayConfig {
   let raw: string
   try {
     raw = fs.readFileSync(configPath, 'utf-8')
@@ -139,7 +149,10 @@ function parseConfigFile(configPath: string): RelayConfigEnv {
 
   const configObject = parsed as RelayConfigFile
   if (configObject.env === undefined) {
-    return configObject
+    return {
+      env: configObject,
+      localeValue: configObject.locale ?? configObject.LOCALE,
+    }
   }
 
   if (!isObject(configObject.env)) {
@@ -148,7 +161,10 @@ function parseConfigFile(configPath: string): RelayConfigEnv {
     )
   }
 
-  return configObject.env
+  return {
+    env: configObject.env,
+    localeValue: configObject.locale ?? configObject.LOCALE,
+  }
 }
 
 function readRequiredString(value: unknown, field: string): string {
@@ -221,7 +237,7 @@ function readLocale(value: unknown): AppLocale {
 
   if (typeof value !== 'string') {
     console.warn(
-      t`Invalid relay config: LOCALE "${formatInvalidLocale(value)}" is not supported. Falling back to en.`,
+      t`Invalid relay config: locale "${formatInvalidLocale(value)}" is not supported. Falling back to en.`,
     )
     return defaultLocale
   }
@@ -236,7 +252,7 @@ function readLocale(value: unknown): AppLocale {
   }
 
   console.warn(
-    t`Invalid relay config: LOCALE "${normalized}" is not supported. Falling back to en.`,
+    t`Invalid relay config: locale "${normalized}" is not supported. Falling back to en.`,
   )
 
   return defaultLocale

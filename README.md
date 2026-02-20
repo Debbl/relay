@@ -28,24 +28,24 @@ Config fields:
 
 ```json
 {
+  "locale": "en",
   "env": {
     "BASE_DOMAIN": "https://open.feishu.cn",
     "APP_ID": "your_app_id",
     "APP_SECRET": "your_app_secret",
     "BOT_OPEN_ID": "ou_xxx",
     "CODEX_BIN": "codex",
-    "CODEX_TIMEOUT_MS": null,
-    "LOCALE": "en"
+    "CODEX_TIMEOUT_MS": null
   }
 }
 ```
 
 - Required fields (inside `env`): `BASE_DOMAIN`, `APP_ID`, `APP_SECRET`.
 - Optional fields:
+  - `locale` (root level, supported values: `en`, `zh`; default: `en`; unsupported value falls back to `en` with a warning).
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
   - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
-  - `LOCALE` (supported values: `en`, `zh`; default: `en`; unsupported value falls back to `en` with a warning).
 
 ## Run
 
