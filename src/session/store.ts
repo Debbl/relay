@@ -8,6 +8,7 @@ const SESSION_FILE_NAME = 'sessions.json'
 const SESSION_FILE_VERSION = 1 as const
 
 interface PersistedSessionRef {
+  sessionKey: string
   threadId: string
   mode: ChatMode
   model: string
@@ -51,11 +52,11 @@ export function initializeSessionStore(input: {
   sessionQueue.clear()
 
   if (workspaceSessions) {
-    for (const [sessionKey, sessionRef] of Object.entries(
+    for (const sessionRef of Object.values(
       workspaceSessions.activeBySessionKey,
     )) {
       sessionStore.set(
-        sessionKey,
+        sessionRef.sessionKey,
         hydrateSession(sessionRef, input.workspaceCwd),
       )
     }
@@ -128,17 +129,21 @@ function persistSetSession(sessionKey: string, session: BotSession): void {
   }
 
   const savedAt = new Date().toISOString()
-  const sessionRef = toPersistedSessionRef(session, savedAt)
+  const sessionRef = toPersistedSessionRef(sessionKey, session, savedAt)
   const workspaceSessions = getOrCreateWorkspaceSessions(
     state.data,
     state.workspaceCwd,
   )
 
-  workspaceSessions.activeBySessionKey[sessionKey] = sessionRef
+  removeActiveSessionBySessionKey(
+    workspaceSessions.activeBySessionKey,
+    sessionKey,
+  )
+  workspaceSessions.activeBySessionKey[session.threadId] = sessionRef
 
-  const history = workspaceSessions.historyBySessionKey[sessionKey] ?? []
+  const history = workspaceSessions.historyBySessionKey[session.threadId] ?? []
   history.push(sessionRef)
-  workspaceSessions.historyBySessionKey[sessionKey] = history
+  workspaceSessions.historyBySessionKey[session.threadId] = history
 
   state.data.updatedAt = savedAt
   writePersistedSessionsFile(state.filePath, state.data)
@@ -155,11 +160,13 @@ function persistClearSession(sessionKey: string): void {
     return
   }
 
-  if (workspaceSessions.activeBySessionKey[sessionKey] === undefined) {
+  const deleted = removeActiveSessionBySessionKey(
+    workspaceSessions.activeBySessionKey,
+    sessionKey,
+  )
+  if (!deleted) {
     return
   }
-
-  delete workspaceSessions.activeBySessionKey[sessionKey]
   state.data.updatedAt = new Date().toISOString()
   writePersistedSessionsFile(state.filePath, state.data)
 }
@@ -273,33 +280,41 @@ function parseWorkspaceSessions(
   }
 
   const activeBySessionKey: Record<string, PersistedSessionRef> = {}
-  for (const [sessionKey, sessionRefValue] of Object.entries(
+  for (const [entryKey, sessionRefValue] of Object.entries(
     value.activeBySessionKey,
   )) {
-    activeBySessionKey[sessionKey] = parsePersistedSessionRef(
+    const sessionRef = parsePersistedSessionRef(
       sessionRefValue,
       filePath,
-      `activeBySessionKey.${sessionKey}`,
+      `activeBySessionKey.${entryKey}`,
+      entryKey,
     )
+    activeBySessionKey[sessionRef.threadId] = sessionRef
   }
 
   const historyBySessionKey: Record<string, PersistedSessionRef[]> = {}
-  for (const [sessionKey, historyValue] of Object.entries(
+  for (const [entryKey, historyValue] of Object.entries(
     value.historyBySessionKey,
   )) {
     if (!Array.isArray(historyValue)) {
       throw new TypeError(
-        `Invalid relay session index at ${filePath}: historyBySessionKey.${sessionKey} must be an array.`,
+        `Invalid relay session index at ${filePath}: historyBySessionKey.${entryKey} must be an array.`,
       )
     }
 
-    historyBySessionKey[sessionKey] = historyValue.map((item, index) =>
+    const parsedHistory = historyValue.map((item, index) =>
       parsePersistedSessionRef(
         item,
         filePath,
-        `historyBySessionKey.${sessionKey}[${index}]`,
+        `historyBySessionKey.${entryKey}[${index}]`,
+        entryKey,
       ),
     )
+    for (const sessionRef of parsedHistory) {
+      const history = historyBySessionKey[sessionRef.threadId] ?? []
+      history.push(sessionRef)
+      historyBySessionKey[sessionRef.threadId] = history
+    }
   }
 
   return {
@@ -312,6 +327,7 @@ function parsePersistedSessionRef(
   value: unknown,
   filePath: string,
   location: string,
+  fallbackSessionKey: string,
 ): PersistedSessionRef {
   if (!isObject(value)) {
     throw new Error(
@@ -346,9 +362,14 @@ function parsePersistedSessionRef(
     )
   }
 
+  const sessionKey =
+    typeof value.sessionKey === 'string' && value.sessionKey.trim().length > 0
+      ? value.sessionKey
+      : fallbackSessionKey
   const title = normalizeOptionalTitle(value.title)
 
   return {
+    sessionKey,
     threadId: value.threadId,
     model: value.model,
     mode: value.mode,
@@ -371,12 +392,14 @@ function hydrateSession(
 }
 
 function toPersistedSessionRef(
+  sessionKey: string,
   session: BotSession,
   savedAt: string,
 ): PersistedSessionRef {
   const title = normalizeOptionalTitle(session.title)
 
   return {
+    sessionKey,
     threadId: session.threadId,
     mode: session.mode,
     model: session.model,
@@ -450,4 +473,19 @@ function formatError(error: unknown): string {
   }
 
   return String(error)
+}
+
+function removeActiveSessionBySessionKey(
+  activeBySessionKey: Record<string, PersistedSessionRef>,
+  sessionKey: string,
+): boolean {
+  let deleted = false
+  for (const [threadId, sessionRef] of Object.entries(activeBySessionKey)) {
+    if (sessionRef.sessionKey === sessionKey) {
+      delete activeBySessionKey[threadId]
+      deleted = true
+    }
+  }
+
+  return deleted
 }

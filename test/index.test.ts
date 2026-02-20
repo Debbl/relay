@@ -156,7 +156,7 @@ describe('message routing', () => {
     expect(reply).toBe('reply-from-codex')
   })
 
-  it('generates session title via model for first prompt after /new', async () => {
+  it('uses first prompt as session title after /new', async () => {
     const key = getSessionKey({
       chatType: 'group',
       chatId: 'chat_1',
@@ -179,21 +179,6 @@ describe('message routing', () => {
       message: 'reply-from-codex',
       cwd: '/Users/home/workspace/relay',
     })
-    runTurn
-      .mockResolvedValueOnce({
-        threadId: 'existing_thread',
-        model: 'gpt-5.3-codex',
-        mode: 'default',
-        message: 'reply-from-codex',
-        cwd: '/Users/home/workspace/relay',
-      })
-      .mockResolvedValueOnce({
-        threadId: 'title_thread',
-        model: 'gpt-5.3-codex',
-        mode: 'default',
-        message: '"Fix login flow"\nnotes',
-        cwd: '/Users/home/workspace/relay',
-      })
 
     await buildReplyForMessageEvent(
       createEvent({
@@ -216,7 +201,7 @@ describe('message routing', () => {
       },
     )
 
-    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(runTurn).toHaveBeenCalledTimes(1)
     expect(runTurn).toHaveBeenNthCalledWith(1, {
       prompt: 'fix login bug',
       mode: 'default',
@@ -227,15 +212,10 @@ describe('message routing', () => {
         cwd: '/Users/home/workspace/relay',
       },
     })
-    expect(runTurn).toHaveBeenNthCalledWith(2, {
-      prompt: expect.stringContaining('User message: fix login bug'),
-      mode: 'default',
-      session: null,
-    })
-    expect(getSession(key)?.title).toBe('Fix login flow')
+    expect(getSession(key)?.title).toBe('fix login bug')
   })
 
-  it('falls back to prompt truncation when title generation fails', async () => {
+  it('truncates first prompt when title is too long', async () => {
     const key = getSessionKey({
       chatType: 'group',
       chatId: 'chat_1',
@@ -251,16 +231,13 @@ describe('message routing', () => {
 
     const createThread = vi.fn()
     const listOpenProjects = vi.fn()
-    const runTurn = vi
-      .fn()
-      .mockResolvedValueOnce({
-        threadId: 'existing_thread',
-        model: 'gpt-5.3-codex',
-        mode: 'default',
-        message: 'reply-from-codex',
-        cwd: '/Users/home/workspace/relay',
-      })
-      .mockRejectedValueOnce(new Error('timeout'))
+    const runTurn = vi.fn().mockResolvedValueOnce({
+      threadId: 'existing_thread',
+      model: 'gpt-5.3-codex',
+      mode: 'default',
+      message: 'reply-from-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
 
     await buildReplyForMessageEvent(
       createEvent({
@@ -283,11 +260,11 @@ describe('message routing', () => {
       },
     )
 
-    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(runTurn).toHaveBeenCalledTimes(1)
     expect(getSession(key)?.title).toBe('fix login bug in prod...')
   })
 
-  it('falls back when model title is blank', async () => {
+  it('normalizes whitespace when using first prompt as title', async () => {
     const key = getSessionKey({
       chatType: 'group',
       chatId: 'chat_1',
@@ -303,22 +280,13 @@ describe('message routing', () => {
 
     const createThread = vi.fn()
     const listOpenProjects = vi.fn()
-    const runTurn = vi
-      .fn()
-      .mockResolvedValueOnce({
-        threadId: 'existing_thread',
-        model: 'gpt-5.3-codex',
-        mode: 'default',
-        message: 'reply-from-codex',
-        cwd: '/Users/home/workspace/relay',
-      })
-      .mockResolvedValueOnce({
-        threadId: 'title_thread',
-        model: 'gpt-5.3-codex',
-        mode: 'default',
-        message: ' \n ',
-        cwd: '/Users/home/workspace/relay',
-      })
+    const runTurn = vi.fn().mockResolvedValueOnce({
+      threadId: 'existing_thread',
+      model: 'gpt-5.3-codex',
+      mode: 'default',
+      message: 'reply-from-codex',
+      cwd: '/Users/home/workspace/relay',
+    })
 
     await buildReplyForMessageEvent(
       createEvent({
@@ -341,7 +309,7 @@ describe('message routing', () => {
       },
     )
 
-    expect(runTurn).toHaveBeenCalledTimes(2)
+    expect(runTurn).toHaveBeenCalledTimes(1)
     expect(getSession(key)?.title).toBe('investigate payment t...')
   })
 

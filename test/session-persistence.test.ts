@@ -83,8 +83,8 @@ describe('session persistence', () => {
 
     const parsed = readJson(sessionsPath)
     const workspaceData = getWorkspaceData(parsed, workspaceCwd)
-    expect(workspaceData.activeBySessionKey[sessionKey]).toBeUndefined()
-    expect(workspaceData.historyBySessionKey[sessionKey]).toHaveLength(1)
+    expect(workspaceData.activeBySessionKey.thread_2).toBeUndefined()
+    expect(workspaceData.historyBySessionKey.thread_2).toHaveLength(1)
 
     resetSessionStore()
     initializeSessionStore({ homeDir, workspaceCwd })
@@ -115,6 +115,33 @@ describe('session persistence', () => {
     resetSessionStore()
     initializeSessionStore({ homeDir, workspaceCwd: workspaceA })
     expect(getSession(sessionKey)?.threadId).toBe('thread_workspace_a')
+  })
+
+  it('persists active session with threadId as key', () => {
+    const homeDir = createTempHome()
+    const workspaceCwd = '/workspace/relay'
+    const sessionKey = 'group:chat_9:user_9'
+    const session = createSession({
+      threadId: 'thread_9',
+      mode: 'default',
+      model: 'gpt-5.3-codex',
+      cwd: workspaceCwd,
+      title: 'Fix login flow',
+    })
+
+    initializeSessionStore({ homeDir, workspaceCwd })
+    setSession(sessionKey, session)
+
+    const sessionsPath = path.join(homeDir, '.relay', 'sessions.json')
+    const parsed = readJson(sessionsPath)
+    const workspaceData = getWorkspaceData(parsed, workspaceCwd)
+    const active = workspaceData.activeBySessionKey.thread_9
+    expect(isObject(active)).toBe(true)
+    expect(active).toMatchObject({
+      sessionKey,
+      threadId: 'thread_9',
+      title: 'Fix login flow',
+    })
   })
 
   it('throws when persisted file has invalid JSON', () => {

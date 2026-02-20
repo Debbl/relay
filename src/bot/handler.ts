@@ -1,5 +1,4 @@
 import { t } from '@lingui/core/macro'
-import { getCurrentLocale } from '../i18n/runtime'
 import { getSessionKey } from '../session/store'
 import { getHelpText, parseCommand } from './commands'
 import type {
@@ -11,15 +10,6 @@ import type {
 } from '../core/types'
 
 const MAX_SESSION_TITLE_LENGTH = 24
-
-const WRAPPING_QUOTE_PAIRS: ReadonlyArray<readonly [string, string]> = [
-  ['"', '"'],
-  ["'", "'"],
-  ['“', '”'],
-  ['‘', '’'],
-  ['「', '」'],
-  ['《', '》'],
-]
 
 export interface HandleIncomingTextDeps {
   createThread: (mode: ChatMode) => Promise<BotSession>
@@ -135,8 +125,6 @@ export async function handleIncomingText(
       const title = await resolveSessionTitle({
         currentSession,
         prompt: parsed.prompt,
-        mode,
-        runTurn: deps.runTurn,
       })
 
       deps.setSession(sessionKey, {
@@ -172,8 +160,6 @@ function formatProjectsError(error: unknown): string {
 async function resolveSessionTitle(input: {
   currentSession: BotSession | undefined
   prompt: string
-  mode: ChatMode
-  runTurn: HandleIncomingTextDeps['runTurn']
 }): Promise<string | undefined> {
   const currentTitle = normalizeSessionTitle(input.currentSession?.title)
   if (currentTitle) {
@@ -184,42 +170,7 @@ async function resolveSessionTitle(input: {
     return undefined
   }
 
-  return generateSessionTitleWithFallback({
-    prompt: input.prompt,
-    mode: input.mode,
-    runTurn: input.runTurn,
-  })
-}
-
-async function generateSessionTitleWithFallback(input: {
-  prompt: string
-  mode: ChatMode
-  runTurn: HandleIncomingTextDeps['runTurn']
-}): Promise<string> {
-  const fallbackTitle = buildFallbackSessionTitle(input.prompt)
-  const titlePrompt = buildTitleGenerationPrompt(input.prompt)
-
-  try {
-    const generated = await input.runTurn({
-      prompt: titlePrompt,
-      mode: input.mode,
-      session: null,
-    })
-    const sanitizedTitle = sanitizeGeneratedTitle(generated.message)
-    if (sanitizedTitle) {
-      return sanitizedTitle
-    }
-
-    logTitleGenerationFallback(
-      'generated title is empty after post-processing, using fallback',
-    )
-  } catch (error) {
-    logTitleGenerationFallback(
-      `title generation request failed: ${formatErrorMessage(error)}`,
-    )
-  }
-
-  return fallbackTitle
+  return buildFallbackSessionTitle(input.prompt)
 }
 
 function buildFallbackSessionTitle(prompt: string): string {
@@ -244,71 +195,6 @@ function normalizeSessionTitle(title: string | undefined): string | null {
   return normalized
 }
 
-function buildTitleGenerationPrompt(prompt: string): string {
-  const locale = getCurrentLocale()
-  const systemPrompt =
-    locale === 'zh'
-      ? t`You are a session title generator.
-Generate a short Chinese title based on the user message.
-Strict requirements:
-1. Output title text only, with no explanation.
-2. Output a single line with no line breaks.
-3. Do not use quotes or title marks.
-4. Keep the title within 24 characters.`
-      : t`You are a session title generator.
-Generate a short English title based on the user message.
-Strict requirements:
-1. Output title text only, with no explanation.
-2. Output a single line with no line breaks.
-3. Do not use quotes.
-4. Keep the title within 24 characters.`
-
-  const userMessage = t`User message: ${normalizePrompt(prompt)}`
-  return [systemPrompt, '', userMessage].join('\n')
-}
-
-function sanitizeGeneratedTitle(rawTitle: string): string | null {
-  const trimmed = rawTitle.trim()
-  if (trimmed.length === 0) {
-    return null
-  }
-
-  const firstLine = trimmed.split(/\r?\n/)[0]?.trim() ?? ''
-  if (firstLine.length === 0) {
-    return null
-  }
-
-  const compacted = normalizePrompt(firstLine)
-  const unquoted = stripWrappingQuotes(compacted)
-  if (unquoted.length === 0) {
-    return null
-  }
-
-  return truncateTitle(unquoted)
-}
-
-function stripWrappingQuotes(input: string): string {
-  let value = input.trim()
-  let changed = true
-  while (changed && value.length > 0) {
-    changed = false
-    for (const [left, right] of WRAPPING_QUOTE_PAIRS) {
-      if (value.startsWith(left) && value.endsWith(right)) {
-        const inner = value
-          .slice(left.length, value.length - right.length)
-          .trim()
-        if (inner !== value) {
-          value = inner
-          changed = true
-          break
-        }
-      }
-    }
-  }
-
-  return value
-}
-
 function truncateTitle(input: string): string {
   const chars = Array.from(input)
   if (chars.length <= MAX_SESSION_TITLE_LENGTH) {
@@ -324,16 +210,4 @@ function truncateTitle(input: string): string {
 
 function normalizePrompt(input: string): string {
   return input.replace(/\s+/g, ' ').trim()
-}
-
-function formatErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
-  }
-
-  return String(error)
-}
-
-function logTitleGenerationFallback(message: string): void {
-  console.warn(`[relay] ${message}`)
 }

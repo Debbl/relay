@@ -68,7 +68,7 @@ pnpm dev
 2. Bot replies immediately with a processing echo:
    - `已收到，正在处理任务: <task preview>`
 3. Bot sends final Codex result when done.
-4. After `/new`, the first normal prompt triggers one extra model call to auto-generate a session title.
+4. After `/new`, the first normal prompt is used directly as the session title (with normalization and truncation).
 
 ### P2P chat
 
