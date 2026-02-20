@@ -1,6 +1,7 @@
 import process from 'node:process'
 import * as Lark from '@larksuiteoapi/node-sdk'
 import { t } from '@lingui/core/macro'
+import { isPlainObject } from 'es-toolkit/predicate'
 import { parseCommand } from './bot/commands'
 import { handleIncomingText } from './bot/handler'
 import { shouldProcessMessage } from './bot/message-filter'
@@ -107,7 +108,7 @@ function shouldAttachThreadTag(data: FeishuReceiveMessageEvent): boolean {
 function parseEventText(content: string): string | null {
   try {
     const parsed: unknown = JSON.parse(content)
-    if (!isRecord(parsed)) {
+    if (!isPlainObject(parsed)) {
       return null
     }
 
@@ -115,10 +116,6 @@ function parseEventText(content: string): string | null {
   } catch {
     return null
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 const eventDispatcher = new Lark.EventDispatcher({}).register({

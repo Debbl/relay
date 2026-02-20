@@ -1,4 +1,4 @@
-import { isRecord } from './rpc'
+import { isPlainObject } from 'es-toolkit/predicate'
 import type {
   BotSession,
   ChatMode,
@@ -152,7 +152,7 @@ function isThreadMissingError(error: unknown): boolean {
 function isCollaborationModeMask(
   value: unknown,
 ): value is CollaborationModeMask {
-  if (!isRecord(value)) {
+  if (!isPlainObject(value)) {
     return false
   }
 
@@ -173,7 +173,7 @@ function isCollaborationModeMask(
 function isCollaborationModeListResponse(
   value: unknown,
 ): value is CollaborationModeListResponse {
-  if (!isRecord(value) || !Array.isArray(value.data)) {
+  if (!isPlainObject(value) || !Array.isArray(value.data)) {
     return false
   }
 
@@ -181,7 +181,7 @@ function isCollaborationModeListResponse(
 }
 
 function isThreadResult(value: unknown): value is ThreadResult {
-  if (!isRecord(value) || !isRecord(value.thread)) {
+  if (!isPlainObject(value) || !isPlainObject(value.thread)) {
     return false
   }
 

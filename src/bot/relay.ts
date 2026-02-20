@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { isPlainObject } from 'es-toolkit/predicate'
 import {
   isMessageFromBot,
   resolveSenderId,
@@ -80,7 +81,7 @@ export function stripMentionTags(text: string): string {
 function parseTextContent(content: string): string | null {
   try {
     const parsed: unknown = JSON.parse(content)
-    if (!isRecord(parsed)) {
+    if (!isPlainObject(parsed)) {
       return null
     }
 
@@ -88,8 +89,4 @@ function parseTextContent(content: string): string | null {
   } catch {
     return null
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }

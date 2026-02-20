@@ -1,3 +1,4 @@
+import { isPlainObject } from 'es-toolkit/predicate'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { sendReply } from '../src/feishu/reply'
 import {
@@ -116,13 +117,9 @@ function parseReplyText(content: unknown): string {
   }
 
   const parsed: unknown = JSON.parse(content)
-  if (!isRecord(parsed) || typeof parsed.text !== 'string') {
+  if (!isPlainObject(parsed) || typeof parsed.text !== 'string') {
     throw new Error('reply payload must contain text')
   }
 
   return parsed.text
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }

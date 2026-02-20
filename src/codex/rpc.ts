@@ -1,3 +1,4 @@
+import { isPlainObject } from 'es-toolkit/predicate'
 import type {
   RpcErrorObject,
   RpcErrorResponse,
@@ -15,7 +16,7 @@ export function parseRpcLine(line: string): RpcIncomingLine | null {
     return null
   }
 
-  if (!isRecord(parsed)) {
+  if (!isPlainObject(parsed)) {
     return null
   }
 
@@ -59,16 +60,12 @@ export function formatRpcError(error: RpcErrorObject): string {
   return `Codex RPC error (${error.code}): ${error.message}`
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
 export function isRpcRequestId(value: unknown): value is RpcRequestId {
   return typeof value === 'number' || typeof value === 'string'
 }
 
 export function isRpcErrorObject(value: unknown): value is RpcErrorObject {
-  if (!isRecord(value)) {
+  if (!isPlainObject(value)) {
     return false
   }
 

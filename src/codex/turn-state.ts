@@ -1,4 +1,4 @@
-import { isRecord } from './rpc'
+import { isPlainObject } from 'es-toolkit/predicate'
 import type {
   RpcItemCompletedParams,
   RpcNotification,
@@ -22,7 +22,7 @@ export function applyTurnNotification(
 ): void {
   if (notification.method === 'error') {
     if (
-      isRecord(notification.params) &&
+      isPlainObject(notification.params) &&
       typeof notification.params.message === 'string'
     ) {
       accumulator.turnError = notification.params.message
