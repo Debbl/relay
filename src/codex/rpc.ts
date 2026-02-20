@@ -5,7 +5,7 @@ import type {
   RpcRequestId,
   RpcServerRequest,
   RpcSuccessResponse,
-} from './types'
+} from '../core/types'
 
 export function parseRpcLine(line: string): RpcIncomingLine | null {
   let parsed: unknown

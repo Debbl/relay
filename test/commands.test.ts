@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCommand } from '../src/commands'
+import { parseCommand } from '../src/bot/commands'
 
 describe('parseCommand', () => {
   it('parses /new plan', () => {

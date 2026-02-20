@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { handleIncomingText } from '../src/bot-handler'
-import { buildReplyForMessageEvent } from '../src/relay-bot'
+import { handleIncomingText } from '../src/bot/handler'
+import { buildReplyForMessageEvent } from '../src/bot/relay'
 import {
   clearSession,
   getSession,
@@ -8,8 +8,8 @@ import {
   resetSessionStore,
   setSession,
   withSessionLock,
-} from '../src/session-store'
-import type { BotSession } from '../src/types'
+} from '../src/session/store'
+import type { BotSession } from '../src/core/types'
 
 describe('message routing', () => {
   beforeEach(() => {

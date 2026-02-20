@@ -3,7 +3,7 @@ import {
   getSessionKey,
   resetSessionStore,
   withSessionLock,
-} from '../src/session-store'
+} from '../src/session/store'
 
 describe('session-store', () => {
   afterEach(() => {

@@ -1,4 +1,9 @@
-import type { FeishuMention, HandleIncomingTextInput } from './types'
+import {
+  isMessageFromBot,
+  resolveSenderId,
+  shouldHandleGroupMessage,
+} from './message-filter'
+import type { FeishuMention, HandleIncomingTextInput } from '../core/types'
 
 export interface ReceiveMessageEvent {
   sender: {
@@ -22,6 +27,8 @@ export interface RelayBotDeps {
   botOpenId?: string
   handleIncomingText: (input: HandleIncomingTextInput) => Promise<string>
 }
+
+export { shouldHandleGroupMessage } from './message-filter'
 
 export async function buildReplyForMessageEvent(
   event: ReceiveMessageEvent,
@@ -65,21 +72,6 @@ export async function buildReplyForMessageEvent(
   })
 }
 
-export function shouldHandleGroupMessage(
-  mentions: FeishuMention[] | undefined,
-  botOpenId?: string,
-): boolean {
-  if (!mentions || mentions.length === 0) {
-    return false
-  }
-
-  if (!botOpenId) {
-    return true
-  }
-
-  return mentions.some((mention) => mention.id?.open_id === botOpenId)
-}
-
 export function stripMentionTags(text: string): string {
   return text.replace(/<at\b[^>]*>.*?<\/at>/g, '').trim()
 }
@@ -95,39 +87,6 @@ function parseTextContent(content: string): string | null {
   } catch {
     return null
   }
-}
-
-function resolveSenderId(
-  senderId:
-    | {
-        open_id?: string
-        user_id?: string
-        union_id?: string
-      }
-    | undefined,
-): string | null {
-  if (!senderId) {
-    return null
-  }
-
-  return senderId.open_id ?? senderId.user_id ?? senderId.union_id ?? null
-}
-
-function isMessageFromBot(
-  event: ReceiveMessageEvent,
-  botOpenId?: string,
-): boolean {
-  const senderType = event.sender.sender_type?.toLowerCase()
-  if (senderType === 'app') {
-    return true
-  }
-
-  if (!botOpenId) {
-    return false
-  }
-
-  const senderId = resolveSenderId(event.sender.sender_id)
-  return senderId === botOpenId
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

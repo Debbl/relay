@@ -1,4 +1,4 @@
-import type { ChatMode, ParsedCommand } from './types'
+import type { ChatMode, ParsedCommand } from '../core/types'
 
 const COMMAND_HELP = '/help'
 const COMMAND_NEW = '/new'

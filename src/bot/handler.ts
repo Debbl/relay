@@ -1,12 +1,12 @@
+import { getSessionKey } from '../session/store'
 import { HELP_TEXT, parseCommand } from './commands'
-import { getSessionKey } from './session-store'
 import type {
   BotSession,
   ChatMode,
   CodexTurnResult,
   HandleIncomingTextInput,
   OpenProjectsResult,
-} from './types'
+} from '../core/types'
 
 const DEFAULT_SESSION_TITLE = '新会话'
 const MAX_SESSION_TITLE_LENGTH = 24

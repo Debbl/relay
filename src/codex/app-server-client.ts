@@ -7,10 +7,14 @@ import {
   isRpcServerRequest,
   isRpcSuccessResponse,
   parseRpcLine,
-} from './codex-rpc'
+} from './rpc'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import type { Interface } from 'node:readline'
-import type { RpcNotification, RpcRequestId, RpcServerRequest } from './types'
+import type {
+  RpcNotification,
+  RpcRequestId,
+  RpcServerRequest,
+} from '../core/types'
 
 interface PendingRequest {
   resolve: (value: unknown) => void

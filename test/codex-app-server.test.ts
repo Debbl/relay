@@ -5,7 +5,7 @@ import {
   formatRpcError,
   parseRpcLine,
   resolveTurnMessage,
-} from '../src/codex-app-server'
+} from '../src/codex/app-server'
 
 describe('codex-app-server helpers', () => {
   it('parses rpc response and notification lines', () => {

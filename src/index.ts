@@ -1,81 +1,25 @@
-import process from 'node:process'
 import * as Lark from '@larksuiteoapi/node-sdk'
-import { handleIncomingText } from './bot-handler'
-import { createCodexThread, runCodexTurn } from './codex-app-server'
-import { listOpenProjects } from './codex-state'
-import { loadRelayConfig } from './config'
-import {
-  buildReplyForMessageEvent,
-  shouldHandleGroupMessage,
-} from './relay-bot'
+import { handleIncomingText } from './bot/handler'
+import { shouldProcessMessage } from './bot/message-filter'
+import { buildReplyForMessageEvent } from './bot/relay'
+import { createCodexThread, runCodexTurn } from './codex/app-server'
+import { listOpenProjects } from './codex/state'
+import { loadConfigOrExit } from './core/startup'
+import { sendReply } from './feishu/reply'
 import {
   clearSession,
   getSession,
-  getSessionKey,
   setSession,
   withSessionLock,
-} from './session-store'
-import type { RelayConfig } from './config'
-import type { ReceiveMessageEvent } from './relay-bot'
+} from './session/store'
+import type { FeishuReceiveMessageEvent } from './feishu/reply'
 
 const relayConfig = loadConfigOrExit()
 const BUSY_MESSAGE = '当前正忙，请稍后再试。'
-const FALLBACK_REPLY_TAG = '[no-thread]'
 
 const client = new Lark.Client(relayConfig.baseConfig)
 const wsClient = new Lark.WSClient(relayConfig.baseConfig)
 let isTaskRunning = false
-
-interface FeishuReceiveMessageEvent extends ReceiveMessageEvent {
-  event_id?: string
-  message: ReceiveMessageEvent['message'] & {
-    message_id: string
-  }
-}
-
-const eventDispatcher = new Lark.EventDispatcher({}).register({
-  'im.message.receive_v1': async (data: FeishuReceiveMessageEvent) => {
-    // eslint-disable-next-line no-console
-    console.info(
-      'feishu message received\n',
-      JSON.stringify(data, null, 2),
-      '\n',
-    )
-
-    if (!shouldProcessMessage(data)) {
-      return
-    }
-
-    if (isTaskRunning) {
-      void sendReply(client, data, BUSY_MESSAGE)
-      return
-    }
-
-    isTaskRunning = true
-    void processIncomingEvent(data).finally(() => {
-      isTaskRunning = false
-    })
-  },
-})
-
-wsClient.start({ eventDispatcher })
-
-function loadConfigOrExit(): RelayConfig {
-  try {
-    return loadRelayConfig()
-  } catch (error) {
-    console.error(formatStartupError(error))
-    process.exit(1)
-  }
-}
-
-function formatStartupError(error: unknown): string {
-  if (error instanceof Error) {
-    return `Failed to start relay: ${error.message}`
-  }
-
-  return `Failed to start relay: ${String(error)}`
-}
 
 async function processIncomingEvent(
   data: FeishuReceiveMessageEvent,
@@ -122,110 +66,29 @@ async function processIncomingEvent(
   }
 }
 
-function shouldProcessMessage(data: FeishuReceiveMessageEvent): boolean {
-  if (isMessageFromBot(data)) {
-    return false
-  }
+const eventDispatcher = new Lark.EventDispatcher({}).register({
+  'im.message.receive_v1': async (data: FeishuReceiveMessageEvent) => {
+    // eslint-disable-next-line no-console
+    console.info(
+      'feishu message received\n',
+      JSON.stringify(data, null, 2),
+      '\n',
+    )
 
-  if (data.message.chat_type === 'p2p') {
-    return true
-  }
+    if (!shouldProcessMessage(data, relayConfig.botOpenId)) {
+      return
+    }
 
-  return shouldHandleGroupMessage(data.message.mentions, relayConfig.botOpenId)
-}
+    if (isTaskRunning) {
+      void sendReply(client, data, BUSY_MESSAGE)
+      return
+    }
 
-function isMessageFromBot(data: FeishuReceiveMessageEvent): boolean {
-  const senderType = data.sender.sender_type?.toLowerCase()
-  if (senderType === 'app') {
-    return true
-  }
-
-  if (!relayConfig.botOpenId) {
-    return false
-  }
-
-  const senderId = resolveSenderId(data.sender.sender_id)
-  return senderId === relayConfig.botOpenId
-}
-
-function resolveSenderId(
-  sender:
-    | {
-        open_id?: string
-        user_id?: string
-        union_id?: string
-      }
-    | undefined,
-): string | null {
-  if (!sender) {
-    return null
-  }
-
-  return sender.open_id ?? sender.user_id ?? sender.union_id ?? null
-}
-
-async function sendReply(
-  larkClient: Lark.Client,
-  data: FeishuReceiveMessageEvent,
-  text: string,
-): Promise<void> {
-  const content = JSON.stringify({
-    text: formatReplyTextWithThreadId(data, text),
-  })
-
-  if (data.message.chat_type === 'p2p') {
-    await larkClient.im.v1.message.create({
-      params: {
-        receive_id_type: 'chat_id',
-      },
-      data: {
-        receive_id: data.message.chat_id,
-        msg_type: 'text',
-        content,
-      },
+    isTaskRunning = true
+    void processIncomingEvent(data).finally(() => {
+      isTaskRunning = false
     })
-    return
-  }
+  },
+})
 
-  await larkClient.im.v1.message.reply({
-    path: {
-      message_id: data.message.message_id,
-    },
-    data: {
-      msg_type: 'text',
-      content,
-    },
-  })
-}
-
-function formatReplyTextWithThreadId(
-  data: FeishuReceiveMessageEvent,
-  text: string,
-): string {
-  const replyTag = resolveReplyTag(data)
-  const normalizedText = text.trim()
-  if (normalizedText.length === 0) {
-    return `${replyTag}\n`
-  }
-
-  return `${replyTag}\n\n${normalizedText}`
-}
-
-function resolveReplyTag(data: FeishuReceiveMessageEvent): string {
-  const senderId = resolveSenderId(data.sender.sender_id)
-  if (!senderId) {
-    return FALLBACK_REPLY_TAG
-  }
-
-  const sessionKey = getSessionKey({
-    chatType: data.message.chat_type,
-    chatId: data.message.chat_id,
-    userId: senderId,
-  })
-  const session = getSession(sessionKey)
-  if (!session || session.threadId.trim().length === 0) {
-    return FALLBACK_REPLY_TAG
-  }
-
-  return `[${session.threadId}]`
-}
+wsClient.start({ eventDispatcher })

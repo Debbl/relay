@@ -1,11 +1,11 @@
-import { isRecord } from './codex-rpc'
+import { isRecord } from './rpc'
 import type {
   RpcItemCompletedParams,
   RpcNotification,
   RpcTaskCompleteParams,
   RpcTurnCompletedParams,
   TurnAccumulator,
-} from './types'
+} from '../core/types'
 
 export function createTurnAccumulator(): TurnAccumulator {
   return {

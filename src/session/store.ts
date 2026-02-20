@@ -1,4 +1,4 @@
-import type { BotSession, SessionKeyInput } from './types'
+import type { BotSession, SessionKeyInput } from '../core/types'
 
 const sessionStore = new Map<string, BotSession>()
 const sessionQueue = new Map<string, Promise<void>>()

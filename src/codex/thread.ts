@@ -1,12 +1,12 @@
-import { isRecord } from './codex-rpc'
-import type { CodexAppServerClient } from './codex-app-server-client'
+import { isRecord } from './rpc'
 import type {
   BotSession,
   ChatMode,
   CollaborationModeListResponse,
   CollaborationModeMask,
   ThreadResult,
-} from './types'
+} from '../core/types'
+import type { CodexAppServerClient } from './app-server-client'
 
 export interface OpenThreadResult {
   threadId: string
