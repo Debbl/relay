@@ -3,7 +3,11 @@ import { getSession, getSessionKey } from '../session/store'
 import type * as Lark from '@larksuiteoapi/node-sdk'
 import type { ReceiveMessageEvent } from '../bot/relay'
 
-const FALLBACK_REPLY_TAG = '[no-thread]'
+const FALLBACK_REPLY_TAG = 'no-thread'
+
+export interface SendReplyOptions {
+  includeThreadTag?: boolean
+}
 
 export interface FeishuReceiveMessageEvent extends ReceiveMessageEvent {
   event_id?: string
@@ -16,9 +20,10 @@ export async function sendReply(
   larkClient: Lark.Client,
   data: FeishuReceiveMessageEvent,
   text: string,
+  options?: SendReplyOptions,
 ): Promise<void> {
   const content = JSON.stringify({
-    text: formatReplyTextWithThreadId(data, text),
+    text: formatReplyTextWithThreadId(data, text, options),
   })
 
   if (data.message.chat_type === 'p2p') {
@@ -49,7 +54,12 @@ export async function sendReply(
 function formatReplyTextWithThreadId(
   data: FeishuReceiveMessageEvent,
   text: string,
+  options?: SendReplyOptions,
 ): string {
+  if (!options?.includeThreadTag) {
+    return text.trim()
+  }
+
   const replyTag = resolveReplyTag(data)
   const normalizedText = text.trim()
   if (normalizedText.length === 0) {
@@ -75,5 +85,5 @@ function resolveReplyTag(data: FeishuReceiveMessageEvent): string {
     return FALLBACK_REPLY_TAG
   }
 
-  return `[${session.threadId}]`
+  return session.threadId
 }
