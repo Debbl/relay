@@ -9,6 +9,7 @@ import {
 import {
   applyTurnNotification,
   createTurnAccumulator,
+  extractAgentMessage,
   resolveTurnMessage,
 } from './turn-state'
 import type { BotSession, ChatMode, CodexTurnResult } from '../core/types'
@@ -17,6 +18,7 @@ export { formatRpcError, parseRpcLine } from './rpc'
 export {
   applyTurnNotification,
   createTurnAccumulator,
+  extractAgentMessage,
   resolveTurnMessage,
 } from './turn-state'
 
@@ -33,6 +35,7 @@ export interface RunCodexTurnInput {
   mode: ChatMode
   session: BotSession | null
   cwd: string
+  onProgressMessage?: (message: string) => Promise<void> | void
   codexBin?: string
   timeoutMs?: number
 }
@@ -83,9 +86,26 @@ export async function runCodexTurn(
   const accumulator = createTurnAccumulator()
   const turnDone = createDeferred<void>()
   let turnDoneResolved = false
+  let lastProgressMessage: string | null = null
 
   client.setNotificationHandler((notification) => {
     applyTurnNotification(accumulator, notification)
+    const progressMessage = extractAgentMessage(notification)
+    if (
+      progressMessage &&
+      progressMessage.trim().length > 0 &&
+      progressMessage !== lastProgressMessage
+    ) {
+      lastProgressMessage = progressMessage
+      try {
+        const callbackResult = input.onProgressMessage?.(progressMessage)
+        if (callbackResult instanceof Promise) {
+          void callbackResult.catch(() => undefined)
+        }
+      } catch {
+        // Ignore progress callback errors; they should not break turn completion.
+      }
+    }
     if (accumulator.turnCompleted && !turnDoneResolved) {
       turnDoneResolved = true
       turnDone.resolve()

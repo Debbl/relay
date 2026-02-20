@@ -23,9 +23,11 @@ const TEMPLATE_ENV_CONFIG: Required<RelayConfigEnv> = {
 
 const TEMPLATE_CONFIG: {
   locale: AppLocale
+  enableProgressReplies: boolean
   env: Required<RelayConfigEnv>
 } = {
   locale: getDefaultLocale(),
+  enableProgressReplies: false,
   env: TEMPLATE_ENV_CONFIG,
 }
 
@@ -41,12 +43,14 @@ export interface RelayConfigEnv {
 interface RelayConfigFile extends RelayConfigEnv {
   locale?: string
   LOCALE?: string
+  enableProgressReplies?: boolean | string | number | null
   env?: RelayConfigEnv
 }
 
 interface ParsedRelayConfig {
   env: RelayConfigEnv
   localeValue: unknown
+  enableProgressRepliesValue: unknown
 }
 
 export interface RelayConfig {
@@ -59,6 +63,7 @@ export interface RelayConfig {
   botOpenId?: string
   codexBin: string
   codexTimeoutMs?: number
+  progressReplyEnabled: boolean
   workspaceCwd: string
   locale: AppLocale
 }
@@ -103,9 +108,62 @@ export function loadRelayConfig(
       readOptionalString(parsed.env.CODEX_BIN, 'CODEX_BIN') ??
       DEFAULT_CODEX_BIN,
     codexTimeoutMs: readTimeoutMs(parsed.env.CODEX_TIMEOUT_MS),
+    progressReplyEnabled: readBoolean(
+      parsed.enableProgressRepliesValue,
+      'enableProgressReplies',
+      false,
+    ),
     workspaceCwd,
     locale,
   }
+}
+
+function readBoolean(
+  value: unknown,
+  field: string,
+  fallback: boolean,
+): boolean {
+  if (value === undefined || value === null) {
+    return fallback
+  }
+
+  if (typeof value === 'boolean') {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    if (value === 1) {
+      return true
+    }
+    if (value === 0) {
+      return false
+    }
+    throw new Error(
+      t`Invalid relay config: ${field} must be a boolean or one of "true"/"false"/"1"/"0".`,
+    )
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (normalized.length === 0) {
+      return fallback
+    }
+
+    if (normalized === 'true' || normalized === '1') {
+      return true
+    }
+    if (normalized === 'false' || normalized === '0') {
+      return false
+    }
+
+    throw new Error(
+      t`Invalid relay config: ${field} must be a boolean or one of "true"/"false"/"1"/"0".`,
+    )
+  }
+
+  throw new Error(
+    t`Invalid relay config: ${field} must be a boolean or one of "true"/"false"/"1"/"0".`,
+  )
 }
 
 function ensureConfigTemplate(configDir: string, configPath: string): void {
@@ -154,6 +212,7 @@ function parseConfigFile(configPath: string): ParsedRelayConfig {
     return {
       env: configObject,
       localeValue: configObject.locale ?? configObject.LOCALE,
+      enableProgressRepliesValue: configObject.enableProgressReplies,
     }
   }
 
@@ -166,6 +225,7 @@ function parseConfigFile(configPath: string): ParsedRelayConfig {
   return {
     env: configObject.env,
     localeValue: configObject.locale ?? configObject.LOCALE,
+    enableProgressRepliesValue: configObject.enableProgressReplies,
   }
 }
 

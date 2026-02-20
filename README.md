@@ -35,6 +35,7 @@ Config fields:
 ```json
 {
   "locale": "en",
+  "enableProgressReplies": false,
   "env": {
     "BASE_DOMAIN": "https://open.feishu.cn",
     "APP_ID": "your_app_id",
@@ -49,6 +50,7 @@ Config fields:
 - Required fields (inside `env`): `BASE_DOMAIN`, `APP_ID`, `APP_SECRET`.
 - Optional fields:
   - `locale` (root level, supported values: `en`, `zh`; default: `en`; unsupported value falls back to `en` with a warning).
+  - `enableProgressReplies` (root level, default: `false`; when enabled, bot sends intermediate `agent_message` updates during long tasks).
   - `BOT_OPEN_ID` (empty or missing means disabled).
   - `CODEX_BIN` (default: `codex`).
   - `CODEX_TIMEOUT_MS` (default: no timeout; if set, must be a positive integer).
@@ -65,10 +67,11 @@ pnpm dev
 ### Message flow
 
 1. Send a text message to the bot.
-2. Bot replies immediately with a processing echo:
-   - `已收到，正在处理任务: <task preview>`
-3. Bot sends final Codex result when done.
-4. After `/new`, the first normal prompt is used directly as the session title (with normalization and truncation).
+2. Bot replies with an interactive Feishu card (`msg_type: interactive`).
+3. For prompt and progress replies, the card header includes a thread marker (`Relay · t-<short-id>`) and color derived from thread id.
+4. Command and error replies also use cards, but without thread marker.
+5. If `enableProgressReplies` is enabled, intermediate progress updates are sent as cards.
+6. After `/new`, the first normal prompt is used directly as the session title (with normalization and truncation).
 
 ### P2P chat
 

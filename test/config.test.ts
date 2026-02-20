@@ -37,6 +37,7 @@ describe('loadRelayConfig', () => {
     const parsed = JSON.parse(content) as Record<string, unknown>
     expect(parsed).toMatchObject({
       locale: 'en',
+      enableProgressReplies: false,
       env: {
         BASE_DOMAIN: 'https://open.feishu.cn',
         APP_ID: 'your_app_id',
@@ -71,6 +72,7 @@ describe('loadRelayConfig', () => {
       botOpenId: undefined,
       codexBin: 'codex',
       codexTimeoutMs: undefined,
+      progressReplyEnabled: false,
       workspaceCwd: '/workspace/relay',
       locale: 'en',
     })
@@ -104,6 +106,7 @@ describe('loadRelayConfig', () => {
       botOpenId: 'ou_env_bot_123',
       codexBin: '/opt/bin/codex',
       codexTimeoutMs: undefined,
+      progressReplyEnabled: false,
       workspaceCwd: '/workspace/relay',
       locale: 'zh',
     })
@@ -136,9 +139,27 @@ describe('loadRelayConfig', () => {
       botOpenId: 'ou_bot_123',
       codexBin: '/usr/local/bin/codex',
       codexTimeoutMs: 240000,
+      progressReplyEnabled: false,
       workspaceCwd: '/workspace/relay',
       locale: 'en',
     })
+  })
+
+  it('loads enableProgressReplies when enabled', () => {
+    const homeDir = createTempHome()
+    writeConfig(homeDir, {
+      BASE_DOMAIN: 'https://open.feishu.cn',
+      APP_ID: 'app_456',
+      APP_SECRET: 'secret_456',
+      enableProgressReplies: 'true',
+    })
+
+    const config = loadRelayConfig({
+      homeDir,
+      workspaceCwd: '/workspace/relay',
+    })
+
+    expect(config.progressReplyEnabled).toBe(true)
   })
 
   it('ignores locale inside env and falls back to top-level/default locale', () => {
@@ -215,6 +236,26 @@ describe('loadRelayConfig', () => {
           workspaceCwd: '/workspace/relay',
         }),
       ).toThrowError('CODEX_TIMEOUT_MS')
+    },
+  )
+
+  it.each(['invalid', 2])(
+    'throws for invalid enableProgressReplies: %s',
+    (enabledValue) => {
+      const homeDir = createTempHome()
+      writeConfig(homeDir, {
+        BASE_DOMAIN: 'https://open.feishu.cn',
+        APP_ID: 'app_789',
+        APP_SECRET: 'secret_789',
+        enableProgressReplies: enabledValue,
+      })
+
+      expect(() =>
+        loadRelayConfig({
+          homeDir,
+          workspaceCwd: '/workspace/relay',
+        }),
+      ).toThrowError('enableProgressReplies')
     },
   )
 

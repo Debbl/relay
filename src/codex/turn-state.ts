@@ -34,19 +34,17 @@ export function applyTurnNotification(
   }
 
   if (notification.method === 'item/completed') {
-    const params = notification.params as RpcItemCompletedParams
-    const item = params.item
-    if (item?.type === 'agentMessage' && typeof item.text === 'string') {
-      accumulator.lastAgentMessageByItem = item.text
+    const agentMessage = extractAgentMessage(notification)
+    if (agentMessage !== null) {
+      accumulator.lastAgentMessageByItem = agentMessage
     }
     return
   }
 
   if (notification.method === 'codex/event/task_complete') {
-    const params = notification.params as RpcTaskCompleteParams
-    const message = params.msg?.last_agent_message
-    if (typeof message === 'string') {
-      accumulator.lastAgentMessageByTask = message
+    const agentMessage = extractAgentMessage(notification)
+    if (agentMessage !== null) {
+      accumulator.lastAgentMessageByTask = agentMessage
     }
     return
   }
@@ -71,4 +69,24 @@ export function resolveTurnMessage(
   return (
     accumulator.lastAgentMessageByTask ?? accumulator.lastAgentMessageByItem
   )
+}
+
+export function extractAgentMessage(
+  notification: RpcNotification<unknown>,
+): string | null {
+  if (notification.method === 'item/completed') {
+    const params = notification.params as RpcItemCompletedParams
+    const item = params.item
+    return item?.type === 'agentMessage' && typeof item.text === 'string'
+      ? item.text
+      : null
+  }
+
+  if (notification.method === 'codex/event/task_complete') {
+    const params = notification.params as RpcTaskCompleteParams
+    const message = params.msg?.last_agent_message
+    return typeof message === 'string' ? message : null
+  }
+
+  return null
 }

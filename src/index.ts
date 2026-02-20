@@ -39,10 +39,16 @@ const client = new Lark.Client(relayConfig.baseConfig)
 const wsClient = new Lark.WSClient(relayConfig.baseConfig)
 let isTaskRunning = false
 
+interface ProgressState {
+  seq: number
+}
+
 async function processIncomingEvent(
   data: FeishuReceiveMessageEvent,
 ): Promise<void> {
   try {
+    const includeThreadTag = shouldAttachThreadTag(data)
+    const progressState: ProgressState = { seq: 0 }
     const reply = await buildReplyForMessageEvent(data, {
       botOpenId: relayConfig.botOpenId,
       handleIncomingText: (input) =>
@@ -60,6 +66,23 @@ async function processIncomingEvent(
               cwd: relayConfig.workspaceCwd,
               codexBin: relayConfig.codexBin,
               timeoutMs: relayConfig.codexTimeoutMs,
+              onProgressMessage: relayConfig.progressReplyEnabled
+                ? async (message) => {
+                    if (message.trim().length === 0) {
+                      return
+                    }
+
+                    progressState.seq += 1
+                    await sendReply(
+                      client,
+                      data,
+                      formatProgressReplyMessage(message, progressState.seq),
+                      {
+                        includeThreadTag,
+                      },
+                    )
+                  }
+                : undefined,
             }),
           getSession,
           setSession,
@@ -74,7 +97,7 @@ async function processIncomingEvent(
     }
 
     await sendReply(client, data, reply, {
-      includeThreadTag: shouldAttachThreadTag(data),
+      includeThreadTag,
     })
   } catch (error) {
     console.error('failed to handle Feishu message', error)
@@ -102,6 +125,12 @@ function shouldAttachThreadTag(data: FeishuReceiveMessageEvent): boolean {
   }
 
   return parseCommand(normalizedText).type === 'prompt'
+}
+
+function formatProgressReplyMessage(message: string, seq: number): string {
+  const stateId = `progress-${String(seq).padStart(3, '0')}`
+  const statusLine = '处理中（非最终结果）'
+  return `**状态ID: ${stateId}**\n${statusLine}\n\n${message.trim()}`
 }
 
 function parseEventText(content: string): string | null {

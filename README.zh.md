@@ -35,6 +35,7 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
 ```json
 {
   "locale": "en",
+  "enableProgressReplies": false,
   "env": {
     "BASE_DOMAIN": "https://open.feishu.cn",
     "APP_ID": "your_app_id",
@@ -49,6 +50,7 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
 - 必填字段（放在 `env` 内）：`BASE_DOMAIN`、`APP_ID`、`APP_SECRET`。
 - 可选字段：
   - `locale`（放在根级，支持：`en`、`zh`；默认：`en`；如果值不支持会告警并回退到 `en`）。
+  - `enableProgressReplies`（放在根级，默认：`false`；开启后，长任务期间会把中间 `agent_message` 实时回复到会话）。
   - `BOT_OPEN_ID`（为空或缺失表示禁用）。
   - `CODEX_BIN`（默认：`codex`）。
   - `CODEX_TIMEOUT_MS`（默认：不超时；如果设置，必须为正整数）。
@@ -65,10 +67,11 @@ pnpm dev
 ### 消息流程
 
 1. 给机器人发送一条文本消息。
-2. 机器人会先立即回复处理中回显：
-   - `已收到，正在处理任务: <task preview>`
-3. Codex 处理完成后，机器人发送最终结果。
-4. 执行 `/new` 后，首条普通提示词会直接作为会话标题（会做空白归一化和截断）。
+2. 机器人会以飞书互动卡片回复（`msg_type: interactive`）。
+3. 对普通提示词与进度消息，卡片头部会显示 thread 标识（`Relay · t-<short-id>`），并基于 thread id 使用稳定颜色。
+4. 命令与错误消息同样使用卡片，但不显示 thread 标识。
+5. 若启用 `enableProgressReplies`，中间进度会持续以卡片发送。
+6. 执行 `/new` 后，首条普通提示词会直接作为会话标题（会做空白归一化和截断）。
 
 ### 单聊（P2P）
 

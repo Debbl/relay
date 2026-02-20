@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyTurnNotification,
   createTurnAccumulator,
+  extractAgentMessage,
   formatRpcError,
   parseRpcLine,
   resolveTurnMessage,
@@ -77,6 +78,31 @@ describe('codex-app-server helpers', () => {
 
     expect(acc.turnCompleted).toBe(true)
     expect(resolveTurnMessage(acc)).toBe('task-message')
+  })
+
+  it('extracts agent messages from progress notifications', () => {
+    expect(
+      extractAgentMessage({
+        method: 'item/completed',
+        params: {
+          item: {
+            type: 'agentMessage',
+            text: 'item-progress',
+          },
+        },
+      }),
+    ).toBe('item-progress')
+
+    expect(
+      extractAgentMessage({
+        method: 'codex/event/task_complete',
+        params: {
+          msg: {
+            last_agent_message: 'task-progress',
+          },
+        },
+      }),
+    ).toBe('task-progress')
   })
 
   it('captures turn errors', () => {
