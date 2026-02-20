@@ -64,7 +64,6 @@ describe('loadRelayConfig', () => {
       botOpenId: undefined,
       codexBin: 'codex',
       codexTimeoutMs: undefined,
-      replyPrefix: '【Relay】',
       workspaceCwd: '/workspace/relay',
     })
   })
@@ -95,7 +94,6 @@ describe('loadRelayConfig', () => {
       botOpenId: 'ou_env_bot_123',
       codexBin: '/opt/bin/codex',
       codexTimeoutMs: undefined,
-      replyPrefix: '【Relay】',
       workspaceCwd: '/workspace/relay',
     })
   })
@@ -146,7 +144,6 @@ describe('loadRelayConfig', () => {
     })
 
     expect(config.codexTimeoutMs).toBeUndefined()
-    expect(config.replyPrefix).toBe('【Relay】')
   })
 
   it.each([-1, 0, 'abc'])(

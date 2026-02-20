@@ -12,7 +12,6 @@ const TEMPLATE_ENV_CONFIG: Required<RelayConfigEnv> = {
   BOT_OPEN_ID: 'ou_xxx',
   CODEX_BIN: DEFAULT_CODEX_BIN,
   CODEX_TIMEOUT_MS: null,
-  REPLY_PREFIX: '【Relay】',
 }
 
 const TEMPLATE_CONFIG: { env: Required<RelayConfigEnv> } = {
@@ -26,7 +25,6 @@ export interface RelayConfigEnv {
   BOT_OPEN_ID?: string
   CODEX_BIN?: string
   CODEX_TIMEOUT_MS?: number | string | null
-  REPLY_PREFIX?: string
 }
 
 interface RelayConfigFile extends RelayConfigEnv {
@@ -42,7 +40,6 @@ export interface RelayConfig {
   botOpenId?: string
   codexBin: string
   codexTimeoutMs?: number
-  replyPrefix: string
   workspaceCwd: string
 }
 
@@ -81,8 +78,6 @@ export function loadRelayConfig(
     codexBin:
       readOptionalString(parsed.CODEX_BIN, 'CODEX_BIN') ?? DEFAULT_CODEX_BIN,
     codexTimeoutMs: readTimeoutMs(parsed.CODEX_TIMEOUT_MS),
-    replyPrefix:
-      readOptionalString(parsed.REPLY_PREFIX, 'REPLY_PREFIX') ?? '【Relay】',
     workspaceCwd,
   }
 }
