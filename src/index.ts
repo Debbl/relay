@@ -8,7 +8,9 @@ import { shouldProcessMessage } from './bot/message-filter'
 import { buildReplyForMessageEvent, stripMentionTags } from './bot/relay'
 import { createCodexThread, runCodexTurn } from './codex/app-server'
 import { listOpenProjects } from './codex/state'
+import { readRelayPackageMetadata } from './core/package-meta'
 import { loadConfigOrExit } from './core/startup'
+import { checkRelayPackageUpdate } from './core/update-check'
 import { sendReply } from './feishu/reply'
 import { initializeI18n } from './i18n/runtime'
 import {
@@ -32,6 +34,14 @@ try {
   const message = error instanceof Error ? error.message : String(error)
   console.error(t`Failed to start relay: ${message}`)
   process.exit(1)
+}
+
+if (process.env.RELAY_SKIP_UPDATE_CHECK !== '1') {
+  const packageMetadata = readRelayPackageMetadata()
+  void checkRelayPackageUpdate({
+    packageName: packageMetadata.name,
+    currentVersion: packageMetadata.version,
+  })
 }
 
 const BUSY_MESSAGE = t`Currently busy. Please try again later.`
