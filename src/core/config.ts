@@ -22,10 +22,9 @@ const TEMPLATE_ENV_CONFIG: Required<RelayConfigEnv> = {
 }
 
 const TEMPLATE_CONFIG: {
-  locale: AppLocale
+  locale?: AppLocale
   env: Required<RelayConfigEnv>
 } = {
-  locale: getDefaultLocale(),
   env: TEMPLATE_ENV_CONFIG,
 }
 
@@ -230,33 +229,35 @@ function readTimeoutMs(value: unknown): number | undefined {
 }
 
 function readLocale(value: unknown): AppLocale {
-  const defaultLocale = getDefaultLocale()
+  // When locale is missing in config, use the system-detected default locale.
+  const systemLocale = getDefaultLocale()
 
   if (value === undefined || value === null) {
-    return defaultLocale
+    return systemLocale
   }
 
   if (typeof value !== 'string') {
     console.warn(
-      t`Invalid relay config: locale "${formatInvalidLocale(value)}" is not supported. Falling back to ${defaultLocale}.`,
+      t`Invalid relay config: locale "${formatInvalidLocale(value)}" is not supported. Falling back to ${systemLocale}.`,
     )
-    return defaultLocale
+    return systemLocale
   }
 
   const normalized = value.trim()
   if (normalized.length === 0) {
-    return defaultLocale
+    return systemLocale
   }
 
-  if (isSupportedLocale(normalized)) {
-    return normalized
+  const mapped = mapLocaleToAppLocale(normalized)
+  if (mapped) {
+    return mapped
   }
 
   console.warn(
-    t`Invalid relay config: locale "${normalized}" is not supported. Falling back to ${defaultLocale}.`,
+    t`Invalid relay config: locale "${normalized}" is not supported. Falling back to ${systemLocale}.`,
   )
 
-  return defaultLocale
+  return systemLocale
 }
 
 function formatInvalidLocale(value: unknown): string {
@@ -277,6 +278,23 @@ function formatInvalidLocale(value: unknown): string {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function mapLocaleToAppLocale(value: string): AppLocale | null {
+  if (isSupportedLocale(value)) {
+    return value
+  }
+
+  const normalized = value.toLowerCase().replaceAll('_', '-')
+  if (normalized === 'zh' || normalized.startsWith('zh-')) {
+    return 'zh'
+  }
+
+  if (normalized === 'en' || normalized.startsWith('en-')) {
+    return 'en'
+  }
+
+  return null
 }
 
 function formatError(error: unknown): string {
