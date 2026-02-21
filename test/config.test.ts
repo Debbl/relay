@@ -35,8 +35,8 @@ describe('loadRelayConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf-8')
     const parsed = JSON.parse(content) as Record<string, unknown>
+    expect(parsed).not.toHaveProperty('locale')
     expect(parsed).toMatchObject({
-      locale: 'en',
       env: {
         BASE_DOMAIN: 'https://open.feishu.cn',
         APP_ID: 'your_app_id',
