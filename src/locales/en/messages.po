@@ -6,9 +6,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: index + 1
-#: src/bot/handler.ts:83
+#: src/bot/handler.ts:75
 msgid "{0}. {root}"
 msgstr "{0}. {root}"
 
@@ -30,7 +36,7 @@ msgstr ""
 msgid "/mode <default|plan> - Switch current session mode"
 msgstr "/mode <default|plan> - Switch current session mode"
 
-#: src/bot/commands.ts:83
+#: src/bot/commands.ts:81
 msgid ""
 "/mode requires one argument: default or plan.\n"
 "\n"
@@ -44,7 +50,7 @@ msgstr ""
 msgid "/new [default|plan] - Create a new session"
 msgstr "/new [default|plan] - Create a new session"
 
-#: src/bot/commands.ts:57
+#: src/bot/commands.ts:56
 msgid ""
 "/new accepts at most one optional argument: default or plan.\n"
 "\n"
@@ -58,7 +64,7 @@ msgstr ""
 msgid "/projects - Show current working directories"
 msgstr "/projects - Show current working directories"
 
-#: src/bot/commands.ts:114
+#: src/bot/commands.ts:111
 msgid ""
 "/projects does not accept arguments.\n"
 "\n"
@@ -72,7 +78,7 @@ msgstr ""
 msgid "/reset - Clear current session"
 msgstr "/reset - Clear current session"
 
-#: src/bot/commands.ts:125
+#: src/bot/commands.ts:122
 msgid ""
 "/reset does not accept arguments.\n"
 "\n"
@@ -86,7 +92,7 @@ msgstr ""
 msgid "/status - Show current session status"
 msgstr "/status - Show current session status"
 
-#: src/bot/commands.ts:103
+#: src/bot/commands.ts:100
 msgid ""
 "/status does not accept arguments.\n"
 "\n"
@@ -100,16 +106,16 @@ msgstr ""
 msgid "Available commands:"
 msgstr "Available commands:"
 
-#: src/bot/relay.ts:60
+#: src/bot/relay.ts:61
 msgid "Cannot identify sender. Please try again later."
 msgstr "Cannot identify sender. Please try again later."
 
 #. placeholder {0}: error.message
-#: src/bot/handler.ts:155
+#: src/bot/handler.ts:146
 msgid "Codex execution failed: {0}"
 msgstr "Codex execution failed: {0}"
 
-#: src/bot/handler.ts:158
+#: src/bot/handler.ts:149
 msgid "Codex execution failed. Please try again later."
 msgstr "Codex execution failed. Please try again later."
 
@@ -123,65 +129,66 @@ msgstr ""
 "\n"
 "{helpText}"
 
-#: src/bot/handler.ts:113
+#: src/bot/handler.ts:106
 msgid "Created a new session."
 msgstr "Created a new session."
 
-#: src/bot/handler.ts:92
+#: src/bot/handler.ts:85
 msgid "Current session has been cleared."
 msgstr "Current session has been cleared."
 
-#: src/bot/handler.ts:68
+#: src/bot/handler.ts:59
 msgid "Current session status:"
 msgstr "Current session status:"
 
-#: src/bot/handler.ts:84
+#: src/bot/handler.ts:77
 msgid "Current working directories:"
 msgstr "Current working directories:"
 
-#: src/index.ts:21
+#: src/index.ts:37
 msgid "Currently busy. Please try again later."
 msgstr "Currently busy. Please try again later."
 
 #. placeholder {0}: created.cwd
-#: src/bot/handler.ts:115
+#: src/bot/handler.ts:108
 msgid "cwd: {0}"
 msgstr "cwd: {0}"
 
-#: src/bot/relay.ts:43
-#: src/bot/relay.ts:48
+#: src/bot/relay.ts:44
+#: src/bot/relay.ts:49
 msgid "Failed to parse message. Please send a text message."
 msgstr "Failed to parse message. Please send a text message."
 
-#: src/index.ts:68
+#: src/index.ts:86
 msgid "Failed to process message. Please try again later."
 msgstr "Failed to process message. Please try again later."
 
 #. placeholder {0}: error.message
-#: src/bot/handler.ts:163
+#: src/bot/handler.ts:154
 msgid "Failed to read open projects: {0}"
 msgstr "Failed to read open projects: {0}"
 
-#: src/bot/handler.ts:166
+#: src/bot/handler.ts:157
 msgid "Failed to read open projects. Please try again later."
 msgstr "Failed to read open projects. Please try again later."
 
 #. placeholder {0}: formatError(error)
-#: src/core/config.ts:121
+#: src/core/config.ts:131
 msgid "Failed to read relay config at {configPath}: {0}"
 msgstr "Failed to read relay config at {configPath}: {0}"
 
 #: src/core/startup.ts:17
+#: src/index.ts:33
 msgid "Failed to start relay: {message}"
 msgstr "Failed to start relay: {message}"
 
 #. placeholder {0}: formatError(error)
-#: src/core/config.ts:130
+#: src/core/config.ts:140
 msgid "Invalid JSON in relay config at {configPath}: {0}"
 msgstr "Invalid JSON in relay config at {configPath}: {0}"
 
-#: src/bot/commands.ts:71
-#: src/bot/commands.ts:92
+#: src/bot/commands.ts:69
+#: src/bot/commands.ts:89
 msgid ""
 "Invalid mode \"{modeToken}\", only default or plan are supported.\n"
 "\n"
@@ -191,94 +198,102 @@ msgstr ""
 "\n"
 "{helpText}"
 
-#: src/core/config.ts:147
+#: src/core/config.ts:160
 msgid "Invalid relay config at {configPath}: env must be a JSON object."
 msgstr "Invalid relay config at {configPath}: env must be a JSON object."
 
-#: src/core/config.ts:136
+#: src/core/config.ts:146
 msgid "Invalid relay config at {configPath}: root must be a JSON object."
 msgstr "Invalid relay config at {configPath}: root must be a JSON object."
 
-#: src/core/config.ts:158
+#: src/core/config.ts:174
 msgid "Invalid relay config: {field} is required and must be a non-empty string."
 msgstr "Invalid relay config: {field} is required and must be a non-empty string."
 
-#: src/core/config.ts:172
+#: src/core/config.ts:187
 msgid "Invalid relay config: {field} must be a string."
 msgstr "Invalid relay config: {field} must be a string."
 
-#: src/core/config.ts:194
-#: src/core/config.ts:205
-#: src/core/config.ts:213
+#: src/core/config.ts:208
+#: src/core/config.ts:219
+#: src/core/config.ts:227
 msgid "Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer."
 msgstr "Invalid relay config: CODEX_TIMEOUT_MS must be a positive integer."
 
 #. placeholder {0}: formatInvalidLocale(value)
+#: src/core/config.ts:241
+msgid "Invalid relay config: locale \"{0}\" is not supported. Falling back to {systemLocale}."
+msgstr "Invalid relay config: locale \"{0}\" is not supported. Falling back to {systemLocale}."
+
 #: src/core/config.ts:226
-msgid "Invalid relay config: LOCALE \"{0}\" is not supported. Falling back to en."
-msgstr "Invalid relay config: LOCALE \"{0}\" is not supported. Falling back to en."
+#~ msgid "Invalid relay config: LOCALE \"{0}\" is not supported. Falling back to en."
+#~ msgstr "Invalid relay config: LOCALE \"{0}\" is not supported. Falling back to en."
+
+#: src/core/config.ts:257
+msgid "Invalid relay config: locale \"{normalized}\" is not supported. Falling back to {systemLocale}."
+msgstr "Invalid relay config: locale \"{normalized}\" is not supported. Falling back to {systemLocale}."
 
 #: src/core/config.ts:241
-msgid "Invalid relay config: LOCALE \"{normalized}\" is not supported. Falling back to en."
-msgstr "Invalid relay config: LOCALE \"{normalized}\" is not supported. Falling back to en."
+#~ msgid "Invalid relay config: LOCALE \"{normalized}\" is not supported. Falling back to en."
+#~ msgstr "Invalid relay config: LOCALE \"{normalized}\" is not supported. Falling back to en."
 
 #. placeholder {0}: created.mode
 #. placeholder {0}: currentSession.mode
-#: src/bot/handler.ts:71
-#: src/bot/handler.ts:116
+#: src/bot/handler.ts:62
+#: src/bot/handler.ts:109
 msgid "mode: {0}"
 msgstr "mode: {0}"
 
 #. placeholder {0}: created.model
 #. placeholder {0}: currentSession.model
-#: src/bot/handler.ts:72
-#: src/bot/handler.ts:117
+#: src/bot/handler.ts:63
+#: src/bot/handler.ts:110
 msgid "model: {0}"
 msgstr "model: {0}"
 
-#: src/bot/handler.ts:65
-#: src/bot/handler.ts:225
+#: src/bot/handler.ts:56
+#: src/bot/handler.ts:179
 msgid "New Session"
 msgstr "New Session"
 
-#: src/bot/handler.ts:97
+#: src/bot/handler.ts:90
 msgid "No active session. Send a normal message or use /new to create one first."
 msgstr "No active session. Send a normal message or use /new to create one first."
 
-#: src/bot/handler.ts:62
+#: src/bot/handler.ts:52
 msgid "No active session. Send a normal message or use /new to create one."
 msgstr "No active session. Send a normal message or use /new to create one."
 
-#: src/bot/handler.ts:80
+#: src/bot/handler.ts:71
 msgid "No working directories are currently open."
 msgstr "No working directories are currently open."
 
-#: src/bot/relay.ts:65
+#: src/bot/relay.ts:66
 msgid "Please send a text message."
 msgstr "Please send a text message."
 
-#: src/core/config.ts:72
+#: src/core/config.ts:80
 msgid "Relay config is missing. Template created at {configPath}. Please edit this file and restart."
 msgstr "Relay config is missing. Template created at {configPath}. Please edit this file and restart."
 
 #. placeholder {0}: parsed.mode
-#: src/bot/handler.ts:105
+#: src/bot/handler.ts:98
 msgid "Switched to {0} mode."
 msgstr "Switched to {0} mode."
 
 #. placeholder {0}: created.threadId
 #. placeholder {0}: currentSession.threadId
-#: src/bot/handler.ts:69
-#: src/bot/handler.ts:114
+#: src/bot/handler.ts:60
+#: src/bot/handler.ts:107
 msgid "thread: {0}"
 msgstr "thread: {0}"
 
-#: src/bot/handler.ts:70
+#: src/bot/handler.ts:61
 msgid "title: {title}"
 msgstr "title: {title}"
 
 #. placeholder {0}: command ?? normalized
-#: src/bot/commands.ts:134
+#: src/bot/commands.ts:131
 msgid ""
 "Unknown command \"{0}\".\n"
 "\n"
@@ -288,43 +303,42 @@ msgstr ""
 "\n"
 "{helpText}"
 
-#. placeholder {0}: normalizePrompt(prompt)
 #: src/bot/handler.ts:263
-msgid "User message: {0}"
-msgstr "User message: {0}"
+#~ msgid "User message: {0}"
+#~ msgstr "User message: {0}"
 
 #: src/bot/handler.ts:248
-msgid ""
-"You are a session title generator.\n"
-"Generate a short Chinese title based on the user message.\n"
-"Strict requirements:\n"
-"1. Output title text only, with no explanation.\n"
-"2. Output a single line with no line breaks.\n"
-"3. Do not use quotes or title marks.\n"
-"4. Keep the title within 24 characters."
-msgstr ""
-"You are a session title generator.\n"
-"Generate a short Chinese title based on the user message.\n"
-"Strict requirements:\n"
-"1. Output title text only, with no explanation.\n"
-"2. Output a single line with no line breaks.\n"
-"3. Do not use quotes or title marks.\n"
-"4. Keep the title within 24 characters."
+#~ msgid ""
+#~ "You are a session title generator.\n"
+#~ "Generate a short Chinese title based on the user message.\n"
+#~ "Strict requirements:\n"
+#~ "1. Output title text only, with no explanation.\n"
+#~ "2. Output a single line with no line breaks.\n"
+#~ "3. Do not use quotes or title marks.\n"
+#~ "4. Keep the title within 24 characters."
+#~ msgstr ""
+#~ "You are a session title generator.\n"
+#~ "Generate a short Chinese title based on the user message.\n"
+#~ "Strict requirements:\n"
+#~ "1. Output title text only, with no explanation.\n"
+#~ "2. Output a single line with no line breaks.\n"
+#~ "3. Do not use quotes or title marks.\n"
+#~ "4. Keep the title within 24 characters."
 
 #: src/bot/handler.ts:255
-msgid ""
-"You are a session title generator.\n"
-"Generate a short English title based on the user message.\n"
-"Strict requirements:\n"
-"1. Output title text only, with no explanation.\n"
-"2. Output a single line with no line breaks.\n"
-"3. Do not use quotes.\n"
-"4. Keep the title within 24 characters."
-msgstr ""
-"You are a session title generator.\n"
-"Generate a short English title based on the user message.\n"
-"Strict requirements:\n"
-"1. Output title text only, with no explanation.\n"
-"2. Output a single line with no line breaks.\n"
-"3. Do not use quotes.\n"
-"4. Keep the title within 24 characters."
+#~ msgid ""
+#~ "You are a session title generator.\n"
+#~ "Generate a short English title based on the user message.\n"
+#~ "Strict requirements:\n"
+#~ "1. Output title text only, with no explanation.\n"
+#~ "2. Output a single line with no line breaks.\n"
+#~ "3. Do not use quotes.\n"
+#~ "4. Keep the title within 24 characters."
+#~ msgstr ""
+#~ "You are a session title generator.\n"
+#~ "Generate a short English title based on the user message.\n"
+#~ "Strict requirements:\n"
+#~ "1. Output title text only, with no explanation.\n"
+#~ "2. Output a single line with no line breaks.\n"
+#~ "3. Do not use quotes.\n"
+#~ "4. Keep the title within 24 characters."
