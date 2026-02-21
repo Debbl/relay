@@ -96,6 +96,8 @@ relay
 - Relay stores session index at `~/.relay/sessions.json` and restores active sessions after restart.
 - The index stores thread ids and basic metadata only; full session transcripts are in `~/.codex/sessions`.
 - Relay fixes workspace root to the process startup directory (`process.cwd()`).
+- Relay checks npm for newer `@debbl/relay` versions at startup and prints a warning when an update is available.
+- Set `RELAY_SKIP_UPDATE_CHECK=1` to disable the startup update check.
 - Ensure process user can read/write `~/.codex/sessions`.
 - Ensure process user can read/write `~/.relay/sessions.json`.
 - `.env.local` is no longer used for runtime config.

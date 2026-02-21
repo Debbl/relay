@@ -96,6 +96,8 @@ relay
 - Relay 会把会话索引保存到 `~/.relay/sessions.json`，重启后可恢复活跃会话。
 - 索引仅保存 thread id 和基础元数据；完整会话内容仍在 `~/.codex/sessions`。
 - Relay 将工作区根目录固定为进程启动目录（`process.cwd()`）。
+- Relay 启动时会到 npm 检查 `@debbl/relay` 是否有新版本，有更新会输出告警提示。
+- 设置 `RELAY_SKIP_UPDATE_CHECK=1` 可禁用启动时版本检查。
 - 请确保进程用户对 `~/.codex/sessions` 有读写权限。
 - 请确保进程用户对 `~/.relay/sessions.json` 有读写权限。
 - 运行时不再使用 `.env.local`。
