@@ -5,5 +5,10 @@ import Lingui from 'unplugin-lingui/rolldown'
 export default defineConfig({
   sourcemap: true,
   dts: { sourcemap: true },
-  plugins: [Lingui(), swc()],
+  plugins: [
+    Lingui(),
+    swc({
+      exclude: ['**/*.json'],
+    }),
+  ],
 })
