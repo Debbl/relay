@@ -59,8 +59,8 @@ Config fields:
 ## Run
 
 ```bash
-pnpm install
-pnpm dev
+cd <your_project>
+relay
 ```
 
 ## How To Use In Feishu

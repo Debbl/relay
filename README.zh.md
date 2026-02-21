@@ -59,8 +59,8 @@ Relay 仅从 `~/.relay/config.json` 读取配置。
 ## 运行
 
 ```bash
-pnpm install
-pnpm dev
+cd <your_project>
+relay
 ```
 
 ## 在飞书中使用
