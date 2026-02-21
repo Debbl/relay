@@ -40,7 +40,6 @@ export interface RelayConfigEnv {
 
 interface RelayConfigFile extends RelayConfigEnv {
   locale?: string
-  LOCALE?: string
   env?: RelayConfigEnv
 }
 
@@ -153,7 +152,7 @@ function parseConfigFile(configPath: string): ParsedRelayConfig {
   if (configObject.env === undefined) {
     return {
       env: configObject,
-      localeValue: configObject.locale ?? configObject.LOCALE,
+      localeValue: configObject.locale,
     }
   }
 
@@ -165,7 +164,7 @@ function parseConfigFile(configPath: string): ParsedRelayConfig {
 
   return {
     env: configObject.env,
-    localeValue: configObject.locale ?? configObject.LOCALE,
+    localeValue: configObject.locale,
   }
 }
 
@@ -239,7 +238,7 @@ function readLocale(value: unknown): AppLocale {
 
   if (typeof value !== 'string') {
     console.warn(
-      t`Invalid relay config: locale "${formatInvalidLocale(value)}" is not supported. Falling back to en.`,
+      t`Invalid relay config: locale "${formatInvalidLocale(value)}" is not supported. Falling back to ${defaultLocale}.`,
     )
     return defaultLocale
   }
@@ -254,7 +253,7 @@ function readLocale(value: unknown): AppLocale {
   }
 
   console.warn(
-    t`Invalid relay config: locale "${normalized}" is not supported. Falling back to en.`,
+    t`Invalid relay config: locale "${normalized}" is not supported. Falling back to ${defaultLocale}.`,
   )
 
   return defaultLocale

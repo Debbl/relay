@@ -5,7 +5,7 @@ import type { Messages } from '@lingui/core'
 
 export type AppLocale = 'en' | 'zh'
 
-const DEFAULT_LOCALE: AppLocale = 'en'
+const DEFAULT_LOCALE: AppLocale = detectDefaultLocale()
 
 const CATALOGS: Record<AppLocale, Messages> = {
   en: enMessages as Messages,
@@ -13,6 +13,10 @@ const CATALOGS: Record<AppLocale, Messages> = {
 }
 
 let activeLocale: AppLocale | null = null
+
+// Activate a default locale eagerly so top-level `t` calls in imported modules
+// never run before Lingui has an active locale.
+initializeI18n(DEFAULT_LOCALE)
 
 export function initializeI18n(locale?: string): AppLocale {
   const resolved = resolveLocale(locale)
@@ -42,8 +46,9 @@ function resolveLocale(locale?: string): AppLocale {
     return DEFAULT_LOCALE
   }
 
-  if (isSupportedLocale(locale)) {
-    return locale
+  const mappedLocale = mapToAppLocale(locale)
+  if (mappedLocale) {
+    return mappedLocale
   }
 
   return DEFAULT_LOCALE
@@ -53,4 +58,41 @@ function ensureI18nInitialized(): void {
   if (!activeLocale) {
     initializeI18n(DEFAULT_LOCALE)
   }
+}
+
+function detectDefaultLocale(): AppLocale {
+  const systemLocale = readSystemLocale()
+  if (!systemLocale) {
+    return 'en'
+  }
+
+  return mapToAppLocale(systemLocale) ?? 'en'
+}
+
+function readSystemLocale(): string | undefined {
+  const locale = Intl.DateTimeFormat().resolvedOptions().locale
+  if (typeof locale !== 'string') {
+    return undefined
+  }
+
+  const normalized = locale.trim()
+  if (normalized.length === 0) {
+    return undefined
+  }
+
+  return normalized
+}
+
+function mapToAppLocale(locale: string): AppLocale | null {
+  const normalized = locale.trim().toLowerCase().replaceAll('_', '-')
+
+  if (normalized === 'zh' || normalized.startsWith('zh-')) {
+    return 'zh'
+  }
+
+  if (normalized === 'en' || normalized.startsWith('en-')) {
+    return 'en'
+  }
+
+  return null
 }
