@@ -4,6 +4,9 @@
 
 A Feishu bot that forwards chat messages to Codex and returns results in chat.
 
+> [!WARNING]
+> This project is currently in beta, and breaking changes may happen at any time.
+
 ## Install
 
 ```bash
@@ -66,7 +69,7 @@ pnpm dev
 
 1. Send a text message to the bot.
 2. Bot replies immediately with a processing echo:
-   - `已收到，正在处理任务: <task preview>`
+   - `Received. Processing task: <task preview>`
 3. Bot sends final Codex result when done.
 4. After `/new`, the first normal prompt is used directly as the session title (with normalization and truncation).
 
@@ -101,7 +104,6 @@ pnpm dev
 
 ```bash
 pnpm i18n:extract
-pnpm i18n:compile
 pnpm lint
 pnpm typecheck
 pnpm test

@@ -4,6 +4,9 @@
 
 一个将飞书聊天消息转发给 Codex，并将结果回传到聊天中的机器人。
 
+> [!WARNING]
+> 当前项目处于 Beta 阶段，可能随时发生破坏性更新。
+
 ## 安装
 
 ```bash
@@ -101,7 +104,6 @@ pnpm dev
 
 ```bash
 pnpm i18n:extract
-pnpm i18n:compile
 pnpm lint
 pnpm typecheck
 pnpm test
